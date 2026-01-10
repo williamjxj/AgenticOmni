@@ -15,12 +15,12 @@ from structlog.types import EventDict, Processor
 
 def add_app_context(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
     """Add application-level context to log events.
-    
+
     Args:
         logger: The logger instance
         method_name: The name of the log method called
         event_dict: The event dictionary
-        
+
     Returns:
         Modified event dictionary with app context
     """
@@ -31,10 +31,10 @@ def add_app_context(logger: Any, method_name: str, event_dict: EventDict) -> Eve
 
 def configure_logging(log_level: str = "INFO", log_format: str = "json") -> None:
     """Configure structured logging with structlog.
-    
+
     This function sets up structlog with appropriate processors for
     development or production use.
-    
+
     Args:
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         log_format: Output format ("json" for production, "console" for development)
@@ -45,7 +45,7 @@ def configure_logging(log_level: str = "INFO", log_format: str = "json") -> None
         stream=sys.stdout,
         level=getattr(logging, log_level.upper()),
     )
-    
+
     # Common processors for all environments
     common_processors: list[Processor] = [
         structlog.contextvars.merge_contextvars,
@@ -59,7 +59,7 @@ def configure_logging(log_level: str = "INFO", log_format: str = "json") -> None
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
     ]
-    
+
     # Choose renderer based on format
     if log_format == "json":
         # JSON renderer for production
@@ -67,7 +67,7 @@ def configure_logging(log_level: str = "INFO", log_format: str = "json") -> None
     else:
         # Console renderer for development (colored, human-readable)
         renderer = structlog.dev.ConsoleRenderer(colors=True)
-    
+
     # Configure structlog
     structlog.configure(
         processors=common_processors + [renderer],
@@ -80,13 +80,13 @@ def configure_logging(log_level: str = "INFO", log_format: str = "json") -> None
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     """Get a configured logger instance for a module.
-    
+
     Args:
         name: Logger name (typically __name__ of the calling module)
-        
+
     Returns:
         Configured structlog logger instance
-        
+
     Example:
         >>> logger = get_logger(__name__)
         >>> logger.info("application_started", version="0.1.0")

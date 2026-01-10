@@ -72,7 +72,7 @@ Update `.env` with the following minimum configuration:
 
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql+asyncpg://agenti_user:dev_password_change_in_prod@localhost:5432/agenticomni
+DATABASE_URL=postgresql+asyncpg://agenti_user:agenti_user@localhost:5436/agenticomni
 
 # API Configuration
 API_HOST=0.0.0.0
@@ -107,7 +107,7 @@ docker-compose ps
 
 # Expected output:
 #   NAME                STATUS              PORTS
-#   postgres            Up (healthy)        0.0.0.0:5432->5432/tcp
+#   postgres            Up (healthy)        0.0.0.0:5436->5432/tcp
 #   redis               Up (healthy)        0.0.0.0:6379->6379/tcp
 ```
 
@@ -561,7 +561,7 @@ Now that your development environment is set up, you can:
 |---------|-----|------|--------------|
 | **Backend API** | http://localhost:8000 | 8000 | `curl localhost:8000/api/v1/health` |
 | **Frontend** | http://localhost:3000 | 3000 | Open in browser |
-| **PostgreSQL** | localhost | 5432 | `docker-compose ps postgres` |
+| **PostgreSQL** | localhost | 5436 | `docker-compose ps postgres` |
 | **Redis** | localhost | 6379 | `docker-compose ps redis` |
 | **API Docs (Swagger)** | http://localhost:8000/api/v1/docs | - | Open in browser |
 | **API Docs (ReDoc)** | http://localhost:8000/api/v1/redoc | - | Open in browser |

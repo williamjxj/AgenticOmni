@@ -3,23 +3,22 @@
 import asyncio
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from alembic import context
+# Load settings to get DATABASE_URL
+from src.shared.config import settings
 
 # Import the Base and all models to ensure they're registered
-from src.storage_indexing.models import Base  # noqa: F401
+from src.storage_indexing.models import Base
 from src.storage_indexing.models.document import Document  # noqa: F401
 from src.storage_indexing.models.document_chunk import DocumentChunk  # noqa: F401
 from src.storage_indexing.models.permission import Permission  # noqa: F401
 from src.storage_indexing.models.processing_job import ProcessingJob  # noqa: F401
 from src.storage_indexing.models.tenant import Tenant  # noqa: F401
 from src.storage_indexing.models.user import User  # noqa: F401
-
-# Load settings to get DATABASE_URL
-from src.shared.config import settings
 
 # this is the Alembic Config object
 config = context.config
@@ -37,11 +36,11 @@ target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
-    
+
     This configures the context with just a URL and not an Engine,
     though an Engine is acceptable here as well. By skipping the Engine
     creation we don't even need a DBAPI to be available.
-    
+
     Calls to context.execute() here emit the given string to the
     script output.
     """
@@ -54,7 +53,7 @@ def run_migrations_offline() -> None:
         compare_type=True,  # Detect column type changes
         compare_server_default=True,  # Detect default value changes
     )
-    
+
     with context.begin_transaction():
         context.run_migrations()
 
@@ -67,7 +66,7 @@ def do_run_migrations(connection: Connection) -> None:
         compare_type=True,  # Detect column type changes
         compare_server_default=True,  # Detect default value changes
     )
-    
+
     with context.begin_transaction():
         context.run_migrations()
 
@@ -79,10 +78,10 @@ async def run_async_migrations() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-    
+
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
-    
+
     await connectable.dispose()
 
 

@@ -115,7 +115,7 @@ CREATE TABLE document_chunks (
     content_text TEXT NOT NULL,
     embedding_vector vector(1536),  -- 1536 dimensions
     chunk_order INTEGER NOT NULL,
-    metadata JSONB,
+    chunk_metadata JSONB,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -331,7 +331,7 @@ settings = Settings()
 **`.env.example` Template**:
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/agenticomni
+DATABASE_URL=postgresql+asyncpg://user:password@localhost:5436/agenticomni
 DATABASE_POOL_SIZE=5
 DATABASE_MAX_OVERFLOW=10
 
@@ -379,9 +379,9 @@ services:
     environment:
       POSTGRES_DB: agenticomni
       POSTGRES_USER: agenti_user
-      POSTGRES_PASSWORD: dev_password_change_in_prod
+      POSTGRES_PASSWORD: agenti_user
     ports:
-      - "5432:5432"
+      - "5436:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql

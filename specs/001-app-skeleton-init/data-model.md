@@ -204,7 +204,7 @@ class User(Base):
 | file_size | BIGINT | NOT NULL | File size in bytes |
 | storage_path | VARCHAR(1000) | NOT NULL | S3/GCS path or local file path |
 | processing_status | VARCHAR(50) | NOT NULL, DEFAULT 'uploaded', CHECK (processing_status IN ('uploaded', 'processing', 'completed', 'failed')) | Document processing status |
-| metadata | JSONB | DEFAULT '{}' | Custom metadata (author, tags, extracted info) |
+| document_metadata | JSONB | DEFAULT '{}' | Custom metadata (author, tags, extracted info) |
 | upload_date | TIMESTAMP | NOT NULL, DEFAULT NOW() | Upload timestamp |
 | processed_at | TIMESTAMP | NULL | Processing completion timestamp |
 | created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() | Record creation timestamp |
@@ -214,7 +214,7 @@ class User(Base):
 - PRIMARY KEY: `document_id`
 - INDEX: `idx_document_tenant_upload` ON `(tenant_id, upload_date DESC)` (for tenant doc listing)
 - INDEX: `idx_document_status` ON `processing_status` (for status filtering)
-- INDEX: `idx_document_metadata` USING GIN ON `metadata` (for JSONB queries)
+- INDEX: `idx_document_metadata` USING GIN ON `document_metadata` (for JSONB queries)
 
 **Constraints**:
 - FOREIGN KEY: `tenant_id` → `tenants(tenant_id)` ON DELETE CASCADE
@@ -237,7 +237,7 @@ class Document(Base):
         default='uploaded',
         index=True
     )
-    metadata = Column(JSONB, default={}, nullable=False)
+    document_metadata = Column(JSONB, default={}, nullable=False)
     upload_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     processed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -269,7 +269,7 @@ class Document(Base):
 | content_text | TEXT | NOT NULL | Extracted text content of chunk |
 | embedding_vector | vector(1536) | NOT NULL | 1536-dimension vector embedding (pgvector) |
 | chunk_order | INTEGER | NOT NULL | Chunk sequence number within document (0-indexed) |
-| metadata | JSONB | DEFAULT '{}' | Chunk-specific metadata (page number, section, etc.) |
+| chunk_metadata | JSONB | DEFAULT '{}' | Chunk-specific metadata (page number, section, etc.) |
 | created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() | Chunk creation timestamp |
 
 **Indexes**:
@@ -293,7 +293,7 @@ class DocumentChunk(Base):
     content_text = Column(Text, nullable=False)
     embedding_vector = Column(Vector(1536), nullable=False)  # pgvector type with 1536 dimensions
     chunk_order = Column(Integer, CheckConstraint("chunk_order >= 0"), nullable=False)
-    metadata = Column(JSONB, default={}, nullable=False)
+    chunk_metadata = Column(JSONB, default={}, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relationships
@@ -561,7 +561,7 @@ def upgrade() -> None:
         sa.Column('file_size', sa.BigInteger, nullable=False),
         sa.Column('storage_path', sa.String(1000), nullable=False),
         sa.Column('processing_status', sa.String(50), nullable=False, server_default='uploaded'),
-        sa.Column('metadata', postgresql.JSONB, server_default='{}', nullable=False),
+        sa.Column('document_metadata', postgresql.JSONB, server_default='{}', nullable=False),
         sa.Column('upload_date', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column('processed_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -570,7 +570,7 @@ def upgrade() -> None:
     )
     op.create_index('idx_document_tenant_upload', 'documents', ['tenant_id', sa.text('upload_date DESC')])
     op.create_index('idx_document_status', 'documents', ['processing_status'])
-    op.create_index('idx_document_metadata', 'documents', ['metadata'], postgresql_using='gin')
+    op.create_index('idx_document_metadata', 'documents', ['document_metadata'], postgresql_using='gin')
     
     # Create document_chunks table
     op.create_table(
@@ -580,7 +580,7 @@ def upgrade() -> None:
         sa.Column('content_text', sa.Text, nullable=False),
         sa.Column('embedding_vector', Vector(1536), nullable=False),
         sa.Column('chunk_order', sa.Integer, nullable=False),
-        sa.Column('metadata', postgresql.JSONB, server_default='{}', nullable=False),
+        sa.Column('chunk_metadata', postgresql.JSONB, server_default='{}', nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.CheckConstraint('chunk_order >= 0', name='chk_chunk_order')
     )

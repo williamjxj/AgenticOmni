@@ -223,3 +223,6 @@ site/
 *.pfx
 secrets/
 .secrets/
+
+# william
+docs/todo.md

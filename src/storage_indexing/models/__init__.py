@@ -13,13 +13,13 @@ from src.storage_indexing.models.user import User
 
 __all__ = [
     "Base",
-    "TenantScopedMixin",
-    "Tenant",
-    "User",
     "Document",
     "DocumentChunk",
-    "Permission",
-    "ProcessingJob",
     "JobStatus",
     "JobType",
+    "Permission",
+    "ProcessingJob",
+    "Tenant",
+    "TenantScopedMixin",
+    "User",
 ]

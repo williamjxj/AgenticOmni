@@ -7,10 +7,10 @@ services:
     environment:
       POSTGRES_DB: agenticomni
       POSTGRES_USER: agenti_user
-      POSTGRES_PASSWORD: dev_password_change_in_prod
+      POSTGRES_PASSWORD: agenti_user
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5432:5432"
+      - "5436:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -27,7 +27,7 @@ services:
     image: redis:7-alpine
     container_name: agenticomni-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

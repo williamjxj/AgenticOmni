@@ -10,15 +10,16 @@ Usage:
 """
 
 from config.settings import Settings
+
 from src.shared.exceptions import ConfigurationError
 
 
 def load_settings() -> Settings:
     """Load and validate settings from environment variables.
-    
+
     Returns:
         Settings: Validated settings instance
-        
+
     Raises:
         ConfigurationError: If required settings are missing or invalid
     """

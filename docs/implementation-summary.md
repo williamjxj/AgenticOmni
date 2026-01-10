@@ -403,7 +403,7 @@ graph TB
 ```mermaid
 graph LR
     subgraph "Docker Compose Network"
-        POSTGRES[PostgreSQL 16<br/>+ pgvector<br/>Port 5432]
+        POSTGRES[PostgreSQL 16<br/>+ pgvector<br/>Port 5436]
         REDIS[Redis 7 Alpine<br/>Port 6379]
     end
     
@@ -434,7 +434,7 @@ graph LR
 
 | Service | Image | Ports | Volumes | Health Check | Status |
 |---------|-------|-------|---------|--------------|--------|
-| **PostgreSQL** | `ankane/pgvector:v0.5.1` | 5432:5432 | `postgres_data` | `pg_isready` every 10s | ✅ Configured |
+| **PostgreSQL** | `ankane/pgvector:v0.5.1` | 5436:5432 | `postgres_data` | `pg_isready` every 10s | ✅ Configured |
 | **Redis** | `redis:7-alpine` | 6379:6379 | `redis_data` | `redis-cli ping` every 10s | ✅ Configured |
 
 ### Quick Commands
@@ -619,14 +619,14 @@ stateDiagram-v2
 | **API ReDoc** | http://localhost:8000/api/v1/redoc | Alternative docs |
 | **OpenAPI Spec** | http://localhost:8000/api/v1/openapi.json | Machine-readable spec |
 | **Health Check** | http://localhost:8000/api/v1/health | Service health status |
-| **PostgreSQL** | localhost:5432 | Database connection |
+| **PostgreSQL** | localhost:5436 | Database connection |
 | **Redis** | localhost:6379 | Cache connection |
 
 ### Database Connection String
 
 ```bash
 # Development (from docker-compose.yml)
-postgresql+asyncpg://agenti_user:dev_password_change_in_prod@localhost:5432/agenticomni
+postgresql+asyncpg://agenti_user:agenti_user@localhost:5436/agenticomni
 
 # Production (update in .env)
 postgresql+asyncpg://<user>:<password>@<host>:<port>/<database>

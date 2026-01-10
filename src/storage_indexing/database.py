@@ -31,21 +31,21 @@ _async_session_maker: async_sessionmaker[AsyncSession] | None = None
 
 def init_db() -> AsyncEngine:
     """Initialize the database engine and session maker.
-    
+
     This should be called once during application startup.
-    
+
     Returns:
         AsyncEngine: The configured database engine
-        
+
     Raises:
         DatabaseError: If database initialization fails
     """
     global _engine, _async_session_maker
-    
+
     if _engine is not None:
         logger.warning("database_already_initialized")
         return _engine
-    
+
     try:
         # Create async engine
         _engine = create_async_engine(
@@ -55,7 +55,7 @@ def init_db() -> AsyncEngine:
             pool_pre_ping=True,  # Verify connections before using
             echo=settings.debug,  # Log SQL statements in debug mode
         )
-        
+
         # Create session factory
         _async_session_maker = async_sessionmaker(
             _engine,
@@ -64,15 +64,15 @@ def init_db() -> AsyncEngine:
             autocommit=False,
             autoflush=False,
         )
-        
+
         logger.info(
             "database_initialized",
             pool_size=settings.database_pool_size,
             max_overflow=settings.database_max_overflow,
         )
-        
+
         return _engine
-    
+
     except Exception as e:
         logger.error(
             "database_initialization_failed",
@@ -87,14 +87,14 @@ def init_db() -> AsyncEngine:
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Get an async database session.
-    
+
     This function is designed to be used as a FastAPI dependency.
     It provides a database session for the duration of a request,
     automatically handling commits and rollbacks.
-    
+
     Yields:
         AsyncSession: Database session
-        
+
     Example:
         >>> @router.get("/users")
         >>> async def get_users(db: AsyncSession = Depends(get_db)):
@@ -103,7 +103,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     if _async_session_maker is None:
         raise DatabaseError("Database not initialized. Call init_db() first.")
-    
+
     async with _async_session_maker() as session:
         try:
             yield session
@@ -122,11 +122,11 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def close_db() -> None:
     """Close the database engine and clean up connections.
-    
+
     This should be called during application shutdown.
     """
     global _engine, _async_session_maker
-    
+
     if _engine is not None:
         await _engine.dispose()
         _engine = None

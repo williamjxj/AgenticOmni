@@ -14,7 +14,7 @@ AgenticOmni is an enterprise-grade AI document intelligence platform built on an
 - **Hybrid Retrieval**: Combine vector search (pgvector) with keyword search for optimal accuracy
 - **Enterprise Security**: Row-level multi-tenancy with RBAC and document-level permissions
 - **Production-Ready**: Async FastAPI backend, PostgreSQL + pgvector, Docker development environment
-- **Modern Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and shadcn/ui components
+- **Modern Frontend**: Next.js 16 with React 19, TypeScript, Tailwind CSS 4, and shadcn/ui components
 
 ## 🏗️ Architecture
 
@@ -35,7 +35,7 @@ src/
 
 ```
 frontend/
-├── app/                     # Next.js 14 App Router pages
+├── app/                     # Next.js 16 App Router pages
 ├── components/              # React components + shadcn/ui
 └── lib/                     # API client, utilities
 ```
@@ -128,7 +128,7 @@ curl http://localhost:8000/api/v1/health
 
 ```bash
 # Database (PostgreSQL with pgvector)
-DATABASE_URL=postgresql+asyncpg://agenti_user:your_password@localhost:5432/agenticomni
+DATABASE_URL=postgresql+asyncpg://agenti_user:your_password@localhost:5436/agenticomni
 DATABASE_POOL_SIZE=5
 DATABASE_MAX_OVERFLOW=10
 
