@@ -15,9 +15,10 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
+
+# Note: lib/ and lib64/ removed - they're Python venv dirs already covered by venv/
+# This prevents ignoring frontend/lib/ which contains source code
 sdist/
 var/
 wheels/
