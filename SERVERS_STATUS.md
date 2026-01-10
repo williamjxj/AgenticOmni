@@ -52,17 +52,22 @@ open http://localhost:3000/documents
 
 ## 📝 Recent Fixes
 
-### Latest Fix (2026-01-10)
-- **Fixed duplicate `/api/v1/api/v1/` path issue**
-- Root cause: `api-client.ts` automatically adds `/api/v1` to all requests
-- Solution: Set `NEXT_PUBLIC_API_URL=http://localhost:8000` (without `/api/v1`)
-- Cleared Next.js cache and restarted frontend
-- All requests now correctly go to `/api/v1/health` etc.
+### Latest Fix (2026-01-10 - Final)
+- **Fixed `/documents` endpoint 404 (missing `/api/v1` prefix)**
+- Root cause: Two API clients with conflicting behavior
+  - `lib/api-client.ts`: Added `/api/v1` automatically ✓
+  - `lib/api/client.ts`: Expected `/api/v1` in base URL ✗
+- Solution: 
+  1. Standardized both clients to add `/api/v1` automatically
+  2. Fixed `.gitignore` (removed overly broad `lib/` pattern)
+  3. Added `frontend/lib/` source files to git
+- **All endpoints now working**: `/api/v1/health`, `/api/v1/documents`, etc.
 
-### Previous Fixes
+### Previous Fixes (2026-01-10)
+- Fixed duplicate `/api/v1/api/v1/` path issue
 - Fixed API route registration (removed duplicate /api/v1 prefix in routers)
 - Fixed Alembic migration duplicate index error
 - Updated frontend .env.local configuration
-- Restarted both backend and frontend servers
+- Cleared Next.js cache and restarted servers
 
 **Status**: 🚀 **READY FOR USE**
