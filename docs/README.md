@@ -8,9 +8,8 @@
 ## 📚 Quick Navigation
 
 ### Implementation & Status
-- **[IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)** - Complete implementation summary (v0.2.0)
+- **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** - Complete implementation status and summary (v0.2.0, 387/387 tasks)
 - **[CHANGELOG.md](./CHANGELOG.md)** - Version history and release notes
-- **[IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)** - Current implementation status (387/387 tasks)
 - **[SERVERS_STATUS.md](./SERVERS_STATUS.md)** - Current server and service status
 
 ### Setup & Configuration
@@ -23,8 +22,7 @@
 - **[FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)** - Next.js/React integration guide
 
 ### Development Guidelines
-- **[VERSION_CONTROL_SUMMARY.md](./VERSION_CONTROL_SUMMARY.md)** - Git workflow and version control
-- **[VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md)** - Documentation versioning standards
+- **[VERSIONING.md](./VERSIONING.md)** - Documentation versioning and version control guide
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** - How to contribute to the project
 
 ### Specifications
@@ -52,7 +50,7 @@
 
 ### For Contributors
 1. Read **[CONTRIBUTING.md](./CONTRIBUTING.md)**
-2. Follow **[VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md)**
+2. Follow **[VERSIONING.md](./VERSIONING.md)**
 3. Use **[templates/](./templates/)** for new documentation
 
 ---
@@ -80,26 +78,26 @@ docs/
 ## 🔍 Find Documentation By Topic
 
 ### Architecture & Design
-- System Architecture → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)
+- System Architecture → [IMPLEMENTATION.md](./IMPLEMENTATION.md)
 - Database Schema → [../specs/002-doc-upload-parsing/data-model.md](../specs/002-doc-upload-parsing/data-model.md)
 - API Contracts → [../specs/002-doc-upload-parsing/contracts/](../specs/002-doc-upload-parsing/contracts/)
 
 ### Features & APIs
-- Document Upload → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#upload-endpoints)
-- Document Parsing → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#multi-format-parsing)
+- Document Upload → [IMPLEMENTATION.md](./IMPLEMENTATION.md#document-upload)
+- Document Parsing → [IMPLEMENTATION.md](./IMPLEMENTATION.md#multi-format-parsing-complete)
 - Malware Scanning → [MALWARE_SCANNING.md](./MALWARE_SCANNING.md)
-- Progress Tracking → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#processing-pipeline)
+- Progress Tracking → [IMPLEMENTATION.md](./IMPLEMENTATION.md#processing-pipeline-complete)
 
 ### Development
 - Setup & Installation → [../README.md](../README.md), [quickstart.md](../specs/002-doc-upload-parsing/quickstart.md)
 - Environment Config → [ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)
 - Frontend Development → [FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)
-- Version Control → [VERSION_CONTROL_SUMMARY.md](./VERSION_CONTROL_SUMMARY.md)
+- Versioning & Git → [VERSIONING.md](./VERSIONING.md)
 
 ### Deployment & Operations
 - Production Deployment → [PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md)
 - Server Status → [SERVERS_STATUS.md](./SERVERS_STATUS.md)
-- Monitoring → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#monitoring--metrics)
+- Monitoring → [IMPLEMENTATION.md](./IMPLEMENTATION.md#monitoring--metrics-complete)
 
 ---
 

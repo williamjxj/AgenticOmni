@@ -297,8 +297,7 @@ See `.env.example` for complete configuration options with documentation.
 All documentation follows [Semantic Versioning](https://semver.org/) with change tracking in [CHANGELOG.md](./docs/CHANGELOG.md).
 
 - **[Documentation Index](./docs/README.md)** - Complete documentation catalog and navigation
-- **[Implementation Complete](./docs/IMPLEMENTATION_COMPLETE.md)** v0.2.0 - Full implementation report with diagrams
-- **[Implementation Status](./docs/IMPLEMENTATION_STATUS.md)** - Current status (387/387 tasks complete)
+- **[Implementation](./docs/IMPLEMENTATION.md)** v0.2.0 - Complete implementation status and summary (387/387 tasks)
 - **[CHANGELOG](./docs/CHANGELOG.md)** - Version history and release notes
 
 ### 🎯 Setup & Configuration Guides
@@ -321,8 +320,7 @@ All documentation follows [Semantic Versioning](https://semver.org/) with change
 ### 📝 Development Guidelines
 
 - **[Contributing Guidelines](./docs/CONTRIBUTING.md)** - How to contribute
-- **[Versioning Guide](./docs/VERSIONING_GUIDE.md)** - Documentation versioning standards
-- **[Version Control Summary](./docs/VERSION_CONTROL_SUMMARY.md)** - Git workflow
+- **[Versioning](./docs/VERSIONING.md)** - Documentation versioning and version control guide
 - **[Document Templates](./docs/templates/)** - ADR and technical doc templates
 
 ### 🏛️ Architecture References
