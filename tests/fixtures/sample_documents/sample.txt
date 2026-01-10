@@ -1,0 +1,13 @@
+Sample Text Document for Testing
+
+This is a sample text file for testing the TXT parser.
+
+It contains multiple paragraphs to test text extraction.
+
+Features to test:
+- UTF-8 encoding
+- Line breaks
+- Multiple paragraphs
+- Special characters: é, ñ, 中文
+
+This should be parsed correctly by the TXTParser.

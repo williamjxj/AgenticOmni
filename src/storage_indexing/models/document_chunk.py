@@ -1,13 +1,24 @@
 """DocumentChunk model for vector embeddings."""
 
 from datetime import UTC, datetime
+from enum import Enum
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.storage_indexing.models.base import Base
+
+
+class ChunkType(str, Enum):
+    """Chunk type enumeration."""
+
+    TEXT = "text"
+    TABLE = "table"
+    LIST = "list"
+    HEADING = "heading"
+    CODE = "code"
 
 
 class DocumentChunk(Base):
@@ -59,6 +70,39 @@ class DocumentChunk(Base):
         Integer,
         nullable=False,
         comment="Order of chunk within document (0-indexed)",
+    )
+
+    # New fields for document parsing
+    chunk_type: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default=ChunkType.TEXT.value,
+        index=True,
+        comment="Type of chunk (text, table, list, heading, code)",
+    )
+
+    start_page: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Starting page number (1-indexed)",
+    )
+
+    end_page: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Ending page number",
+    )
+
+    token_count: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Approximate token count for LLM context",
+    )
+
+    parent_heading: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Section heading for context",
     )
 
     chunk_metadata: Mapped[dict[str, Any] | None] = mapped_column(

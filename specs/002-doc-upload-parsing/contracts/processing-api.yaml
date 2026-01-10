@@ -1,0 +1,568 @@
+openapi: 3.0.3
+info:
+  title: Document Processing API
+  version: 1.0.0
+  description: |
+    API endpoints for tracking and managing document processing jobs in AgenticOmni platform.
+    Supports job status queries, retry operations, and cancellation.
+  contact:
+    name: AgenticOmni Development Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.agenticomni.com/api/v1
+    description: Production
+
+security:
+  - bearerAuth: []
+
+paths:
+  /processing/jobs/{job_id}:
+    get:
+      tags:
+        - Processing
+      summary: Get job status
+      description: |
+        Retrieve the current status of a processing job including progress,
+        estimated time remaining, and error details if failed.
+      operationId: getJobStatus
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /processing/jobs/{job_id}/retry:
+    post:
+      tags:
+        - Processing
+      summary: Retry failed job
+      description: |
+        Retry a failed processing job. Only applicable for jobs in 'failed' status
+        that have not exceeded max retries.
+      operationId: retryJob
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '202':
+          description: Job retry accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobDetail'
+        '400':
+          description: Job cannot be retried
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                maxRetriesReached:
+                  value:
+                    error: "Cannot retry"
+                    message: "Maximum retry attempts (3) exceeded"
+                    code: "MAX_RETRIES_EXCEEDED"
+                invalidStatus:
+                  value:
+                    error: "Cannot retry"
+                    message: "Job status must be 'failed' to retry"
+                    code: "INVALID_JOB_STATUS"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Job is already processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Conflict"
+                message: "Job is already in processing state"
+                code: "JOB_ALREADY_PROCESSING"
+
+  /processing/jobs/{job_id}/cancel:
+    post:
+      tags:
+        - Processing
+      summary: Cancel job
+      description: |
+        Cancel a processing job that is in 'pending' or 'processing' status.
+        Completed or failed jobs cannot be cancelled.
+      operationId: cancelJob
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Job cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobDetail'
+        '400':
+          description: Job cannot be cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Cannot cancel"
+                message: "Only pending or processing jobs can be cancelled"
+                code: "INVALID_JOB_STATUS"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Job already completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Conflict"
+                message: "Cannot cancel completed job"
+                code: "JOB_ALREADY_COMPLETED"
+
+  /processing/jobs:
+    get:
+      tags:
+        - Processing
+      summary: List processing jobs
+      description: |
+        Retrieve a paginated list of processing jobs for the authenticated tenant.
+        Supports filtering by status, job type, and document.
+      operationId: listJobs
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: status
+          in: query
+          description: Filter by job status
+          schema:
+            type: string
+            enum: [pending, processing, completed, failed, retrying, cancelled]
+          example: "processing"
+        - name: job_type
+          in: query
+          description: Filter by job type
+          schema:
+            type: string
+            enum: [parse_document, generate_embeddings]
+          example: "parse_document"
+        - name: document_id
+          in: query
+          description: Filter by document ID
+          schema:
+            type: integer
+          example: 101
+      responses:
+        '200':
+          description: Jobs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /processing/stats:
+    get:
+      tags:
+        - Processing
+        - Statistics
+      summary: Get processing statistics
+      description: |
+        Retrieve aggregate statistics for processing jobs including counts by status,
+        average processing time, and success rates.
+      operationId: getProcessingStats
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingStats'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    JobId:
+      name: job_id
+      in: path
+      required: true
+      description: Processing job unique identifier
+      schema:
+        type: integer
+      example: 2001
+
+    Page:
+      name: page
+      in: query
+      description: Page number (1-indexed)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      example: 1
+
+    Limit:
+      name: limit
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      example: 20
+
+  schemas:
+    JobDetail:
+      type: object
+      required:
+        - job_id
+        - job_type
+        - status
+        - retry_count
+        - max_retries
+        - created_at
+      properties:
+        job_id:
+          type: integer
+          description: Unique job identifier
+          example: 2001
+        document_id:
+          type: integer
+          nullable: true
+          description: Associated document ID
+          example: 101
+        document_filename:
+          type: string
+          nullable: true
+          description: Document filename for convenience
+          example: "Q4 Financial Report.pdf"
+        job_type:
+          type: string
+          enum: [parse_document, generate_embeddings]
+          description: Type of processing job
+          example: "parse_document"
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, retrying, cancelled]
+          description: Current job status
+          example: "processing"
+        progress_percent:
+          type: number
+          format: float
+          nullable: true
+          description: Progress percentage (0-100)
+          example: 65.5
+        estimated_time_remaining:
+          type: integer
+          nullable: true
+          description: Estimated time remaining in seconds
+          example: 45
+        retry_count:
+          type: integer
+          description: Number of retry attempts
+          example: 0
+        max_retries:
+          type: integer
+          description: Maximum allowed retries
+          example: 3
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Job start timestamp
+          example: "2026-01-09T10:30:30Z"
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Job completion timestamp
+          example: null
+        error_message:
+          type: string
+          nullable: true
+          description: Error details if job failed
+          example: null
+        error_code:
+          type: string
+          nullable: true
+          description: Machine-readable error code
+          example: null
+        started_by:
+          type: object
+          nullable: true
+          description: User who initiated the job
+          properties:
+            user_id:
+              type: integer
+              example: 5
+            email:
+              type: string
+              example: "john.doe@acme.com"
+            full_name:
+              type: string
+              example: "John Doe"
+        created_at:
+          type: string
+          format: date-time
+          description: Job creation timestamp
+          example: "2026-01-09T10:30:25Z"
+        duration_seconds:
+          type: integer
+          nullable: true
+          description: Job duration in seconds (if completed)
+          example: null
+
+    JobSummary:
+      type: object
+      required:
+        - job_id
+        - job_type
+        - status
+        - created_at
+      properties:
+        job_id:
+          type: integer
+          example: 2001
+        document_id:
+          type: integer
+          nullable: true
+          example: 101
+        document_filename:
+          type: string
+          nullable: true
+          example: "Q4 Financial Report.pdf"
+        job_type:
+          type: string
+          enum: [parse_document, generate_embeddings]
+          example: "parse_document"
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, retrying, cancelled]
+          example: "completed"
+        progress_percent:
+          type: number
+          format: float
+          nullable: true
+          example: 100.0
+        retry_count:
+          type: integer
+          example: 0
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-09T10:30:25Z"
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-01-09T10:32:15Z"
+
+    JobListResponse:
+      type: object
+      required:
+        - total
+        - page
+        - limit
+        - pages
+        - jobs
+      properties:
+        total:
+          type: integer
+          description: Total number of jobs
+          example: 245
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Items per page
+          example: 20
+        pages:
+          type: integer
+          description: Total number of pages
+          example: 13
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobSummary'
+
+    ProcessingStats:
+      type: object
+      required:
+        - total_jobs
+        - by_status
+        - by_type
+      properties:
+        total_jobs:
+          type: integer
+          description: Total number of jobs
+          example: 245
+        by_status:
+          type: object
+          properties:
+            pending:
+              type: integer
+              example: 5
+            processing:
+              type: integer
+              example: 3
+            completed:
+              type: integer
+              example: 225
+            failed:
+              type: integer
+              example: 10
+            retrying:
+              type: integer
+              example: 1
+            cancelled:
+              type: integer
+              example: 1
+        by_type:
+          type: object
+          properties:
+            parse_document:
+              type: integer
+              example: 200
+            generate_embeddings:
+              type: integer
+              example: 45
+        success_rate:
+          type: number
+          format: float
+          description: Percentage of successfully completed jobs
+          example: 95.74
+        average_duration_seconds:
+          type: number
+          format: float
+          description: Average job duration for completed jobs
+          example: 45.3
+        recent_jobs:
+          type: object
+          properties:
+            last_24h:
+              type: integer
+              example: 25
+            last_7d:
+              type: integer
+              example: 120
+            last_30d:
+              type: integer
+              example: 245
+        failed_jobs_by_error:
+          type: array
+          description: Top 5 failure reasons
+          items:
+            type: object
+            properties:
+              error_code:
+                type: string
+                example: "PARSING_ERROR"
+              count:
+                type: integer
+                example: 5
+              percentage:
+                type: number
+                format: float
+                example: 50.0
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - code
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "Not found"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Processing job not found"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "JOB_NOT_FOUND"
+        details:
+          type: object
+          description: Additional error details
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Unauthorized"
+            message: "Authentication token is missing or invalid"
+            code: "UNAUTHORIZED"
+
+    Forbidden:
+      description: Insufficient permissions or wrong tenant
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Forbidden"
+            message: "You do not have permission to access this job"
+            code: "FORBIDDEN"
+
+    NotFound:
+      description: Job not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Not found"
+            message: "Processing job not found"
+            code: "JOB_NOT_FOUND"
+
+tags:
+  - name: Processing
+    description: Processing job operations
+  - name: Statistics
+    description: Processing statistics and metrics

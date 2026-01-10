@@ -40,6 +40,25 @@ services:
     volumes:
       - redis_data:/data
 
+  clamav:
+    image: clamav/clamav:latest
+    container_name: agenticomni-clamav
+    ports:
+      - "3310:3310"
+    environment:
+      - CLAMAV_NO_FRESHCLAMD=false
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 300s  # ClamAV needs time to download virus definitions
+    restart: unless-stopped
+    networks:
+      - agenticomni-network
+    volumes:
+      - clamav_data:/var/lib/clamav
+
 volumes:
   postgres_data:
     driver: local
@@ -47,6 +66,9 @@ volumes:
   redis_data:
     driver: local
     name: agenticomni_redis_data
+  clamav_data:
+    driver: local
+    name: agenticomni_clamav_data
 
 networks:
   agenticomni-network:

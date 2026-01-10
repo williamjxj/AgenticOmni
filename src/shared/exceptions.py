@@ -94,3 +94,47 @@ class RateLimitError(AgenticOmniException):
 
 class ExternalServiceError(AgenticOmniException):
     """Raised when an external service (LLM API, OCR service) fails."""
+
+
+# ============================================================================
+# Document Upload Exceptions (T016)
+# ============================================================================
+
+
+class FileTypeNotAllowedError(ValidationError):
+    """Raised when uploaded file type is not in allowed list."""
+
+    def __init__(self, message: str, *, file_type: str | None = None, allowed_types: list[str] | None = None) -> None:
+        """Initialize with file type information."""
+        super().__init__(message, details={"file_type": file_type, "allowed_types": allowed_types})
+        self.file_type = file_type
+        self.allowed_types = allowed_types
+
+
+class FileTooLargeError(ValidationError):
+    """Raised when uploaded file exceeds maximum size limit."""
+
+    def __init__(self, message: str, *, file_size: int | None = None, max_size: int | None = None) -> None:
+        """Initialize with file size information."""
+        super().__init__(message, details={"file_size": file_size, "max_size": max_size})
+        self.file_size = file_size
+        self.max_size = max_size
+
+
+class QuotaExceededError(ValidationError):
+    """Raised when upload would exceed tenant storage quota."""
+
+    def __init__(self, message: str, *, used_bytes: int | None = None, quota_bytes: int | None = None) -> None:
+        """Initialize with quota information."""
+        super().__init__(message, details={"used_bytes": used_bytes, "quota_bytes": quota_bytes})
+        self.used_bytes = used_bytes
+        self.quota_bytes = quota_bytes
+
+
+class MalwareScanFailedError(ValidationError):
+    """Raised when malware is detected in uploaded file."""
+
+    def __init__(self, message: str, *, virus_name: str | None = None) -> None:
+        """Initialize with malware information."""
+        super().__init__(message, details={"virus_name": virus_name})
+        self.virus_name = virus_name

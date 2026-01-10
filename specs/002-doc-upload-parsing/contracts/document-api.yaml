@@ -1,0 +1,623 @@
+openapi: 3.0.3
+info:
+  title: Document Management API
+  version: 1.0.0
+  description: |
+    API endpoints for managing documents in AgenticOmni platform.
+    Supports listing, retrieving, downloading, and deleting documents.
+  contact:
+    name: AgenticOmni Development Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.agenticomni.com/api/v1
+    description: Production
+
+security:
+  - bearerAuth: []
+
+paths:
+  /documents:
+    get:
+      tags:
+        - Documents
+      summary: List documents
+      description: |
+        Retrieve a paginated list of documents for the authenticated user's tenant.
+        Supports filtering by status, file type, and text search.
+      operationId: listDocuments
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Status'
+        - $ref: '#/components/parameters/FileType'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/SortOrder'
+      responses:
+        '200':
+          description: Documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /documents/{document_id}:
+    get:
+      tags:
+        - Documents
+      summary: Get document details
+      description: Retrieve detailed information about a specific document
+      operationId: getDocument
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Documents
+      summary: Delete document
+      description: |
+        Permanently delete a document and all associated chunks. This action cannot be undone.
+        Frees up storage quota.
+      operationId: deleteDocument
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '204':
+          description: Document deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Cannot delete document currently being processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Conflict"
+                message: "Cannot delete document while processing is in progress"
+                code: "DELETE_IN_PROGRESS"
+
+  /documents/{document_id}/download:
+    get:
+      tags:
+        - Documents
+      summary: Download document file
+      description: Download the original uploaded file
+      operationId: downloadDocument
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: File download started
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+            text/plain:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              description: Attachment filename
+              schema:
+                type: string
+                example: 'attachment; filename="Q4 Financial Report.pdf"'
+            Content-Length:
+              description: File size in bytes
+              schema:
+                type: integer
+                example: 2457600
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/{document_id}/chunks:
+    get:
+      tags:
+        - Documents
+        - Chunks
+      summary: List document chunks
+      description: Retrieve parsed chunks for a document with pagination
+      operationId: listDocumentChunks
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: chunk_type
+          in: query
+          description: Filter by chunk type
+          schema:
+            type: string
+            enum: [text, table, list, heading, code]
+          example: "text"
+      responses:
+        '200':
+          description: Chunks retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/stats:
+    get:
+      tags:
+        - Documents
+        - Statistics
+      summary: Get document statistics
+      description: Retrieve aggregate statistics for the tenant's documents
+      operationId: getDocumentStats
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentStats'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    DocumentId:
+      name: document_id
+      in: path
+      required: true
+      description: Document unique identifier
+      schema:
+        type: integer
+      example: 101
+
+    Page:
+      name: page
+      in: query
+      description: Page number (1-indexed)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      example: 1
+
+    Limit:
+      name: limit
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      example: 20
+
+    Status:
+      name: status
+      in: query
+      description: Filter by processing status
+      schema:
+        type: string
+        enum: [uploaded, parsing, parsed, failed]
+      example: "parsed"
+
+    FileType:
+      name: file_type
+      in: query
+      description: Filter by file type
+      schema:
+        type: string
+        enum: [pdf, docx, txt]
+      example: "pdf"
+
+    Search:
+      name: search
+      in: query
+      description: Search in filename or metadata
+      schema:
+        type: string
+        minLength: 3
+        maxLength: 100
+      example: "financial report"
+
+    SortBy:
+      name: sort_by
+      in: query
+      description: Sort field
+      schema:
+        type: string
+        enum: [created_at, updated_at, filename, file_size, page_count]
+        default: created_at
+      example: "created_at"
+
+    SortOrder:
+      name: sort_order
+      in: query
+      description: Sort order
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+      example: "desc"
+
+  schemas:
+    DocumentListResponse:
+      type: object
+      required:
+        - total
+        - page
+        - limit
+        - pages
+        - documents
+      properties:
+        total:
+          type: integer
+          description: Total number of documents
+          example: 156
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Items per page
+          example: 20
+        pages:
+          type: integer
+          description: Total number of pages
+          example: 8
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentSummary'
+
+    DocumentSummary:
+      type: object
+      required:
+        - document_id
+        - filename
+        - file_type
+        - file_size
+        - processing_status
+        - created_at
+      properties:
+        document_id:
+          type: integer
+          example: 101
+        filename:
+          type: string
+          example: "Q4 Financial Report.pdf"
+        file_type:
+          type: string
+          enum: [pdf, docx, txt]
+          example: "pdf"
+        file_size:
+          type: integer
+          description: File size in bytes
+          example: 2457600
+        mime_type:
+          type: string
+          example: "application/pdf"
+        processing_status:
+          type: string
+          enum: [uploaded, parsing, parsed, failed]
+          example: "parsed"
+        page_count:
+          type: integer
+          nullable: true
+          example: 24
+        language:
+          type: string
+          nullable: true
+          example: "en"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-09T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-01-09T10:32:15Z"
+
+    DocumentDetail:
+      allOf:
+        - $ref: '#/components/schemas/DocumentSummary'
+        - type: object
+          properties:
+            original_filename:
+              type: string
+              example: "Q4 Financial Report.pdf"
+            content_hash:
+              type: string
+              example: "a3b5c7d9e1f2g3h4i5j6k7l8m9n0o1p2"
+            storage_path:
+              type: string
+              example: "/1/101/doc_20260109_abc123.pdf"
+            uploaded_by:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 5
+                email:
+                  type: string
+                  example: "john.doe@acme.com"
+                full_name:
+                  type: string
+                  example: "John Doe"
+            metadata:
+              type: object
+              example:
+                title: "Q4 Financial Report"
+                author: "Finance Team"
+                tags: ["finance", "quarterly", "2025"]
+            chunk_count:
+              type: integer
+              description: Number of parsed chunks
+              example: 48
+            processing_job:
+              type: object
+              nullable: true
+              properties:
+                job_id:
+                  type: integer
+                  example: 2001
+                status:
+                  type: string
+                  example: "completed"
+                progress_percent:
+                  type: number
+                  example: 100.0
+
+    ChunkListResponse:
+      type: object
+      required:
+        - total
+        - page
+        - limit
+        - pages
+        - chunks
+      properties:
+        total:
+          type: integer
+          example: 48
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        pages:
+          type: integer
+          example: 3
+        chunks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChunkDetail'
+
+    ChunkDetail:
+      type: object
+      required:
+        - chunk_id
+        - chunk_order
+        - chunk_type
+        - content_text
+      properties:
+        chunk_id:
+          type: integer
+          example: 5001
+        chunk_order:
+          type: integer
+          description: Sequence number within document
+          example: 0
+        chunk_type:
+          type: string
+          enum: [text, table, list, heading, code]
+          example: "heading"
+        content_text:
+          type: string
+          example: "Executive Summary"
+        parent_heading:
+          type: string
+          nullable: true
+          example: null
+        start_page:
+          type: integer
+          nullable: true
+          example: 1
+        end_page:
+          type: integer
+          nullable: true
+          example: 1
+        token_count:
+          type: integer
+          nullable: true
+          example: 3
+        has_embedding:
+          type: boolean
+          description: Whether chunk has vector embedding
+          example: true
+        metadata:
+          type: object
+          example:
+            heading_level: 1
+            font_size: 18
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-09T10:32:10Z"
+
+    DocumentStats:
+      type: object
+      required:
+        - total_documents
+        - total_storage_bytes
+        - storage_quota_bytes
+      properties:
+        total_documents:
+          type: integer
+          description: Total number of documents
+          example: 156
+        total_storage_bytes:
+          type: integer
+          description: Total storage used in bytes
+          example: 25769803776
+        storage_quota_bytes:
+          type: integer
+          description: Storage quota in bytes
+          example: 107374182400
+        storage_percent:
+          type: number
+          format: float
+          description: Storage usage percentage
+          example: 24.0
+        by_status:
+          type: object
+          properties:
+            uploaded:
+              type: integer
+              example: 2
+            parsing:
+              type: integer
+              example: 5
+            parsed:
+              type: integer
+              example: 145
+            failed:
+              type: integer
+              example: 4
+        by_file_type:
+          type: object
+          properties:
+            pdf:
+              type: integer
+              example: 120
+            docx:
+              type: integer
+              example: 30
+            txt:
+              type: integer
+              example: 6
+        recent_uploads:
+          type: object
+          properties:
+            last_24h:
+              type: integer
+              example: 12
+            last_7d:
+              type: integer
+              example: 45
+            last_30d:
+              type: integer
+              example: 156
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - code
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "Not found"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Document not found"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "DOCUMENT_NOT_FOUND"
+        details:
+          type: object
+          description: Additional error details
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Unauthorized"
+            message: "Authentication token is missing or invalid"
+            code: "UNAUTHORIZED"
+
+    Forbidden:
+      description: Insufficient permissions or wrong tenant
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Forbidden"
+            message: "You do not have permission to access this document"
+            code: "FORBIDDEN"
+
+    NotFound:
+      description: Document not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Not found"
+            message: "Document not found"
+            code: "DOCUMENT_NOT_FOUND"
+
+tags:
+  - name: Documents
+    description: Document management operations
+  - name: Chunks
+    description: Document chunk operations
+  - name: Statistics
+    description: Aggregate statistics

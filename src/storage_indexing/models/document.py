@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, Integer, String
+from sqlalchemy import JSON, BigInteger, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.storage_indexing.models.base import Base, TenantScopedMixin, TimestampMixin
@@ -12,9 +12,9 @@ from src.storage_indexing.models.base import Base, TenantScopedMixin, TimestampM
 class ProcessingStatus(str, Enum):
     """Document processing status enumeration."""
 
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
+    UPLOADED = "uploaded"
+    PARSING = "parsing"
+    PARSED = "parsed"
     FAILED = "failed"
 
 
@@ -81,9 +81,49 @@ class Document(Base, TenantScopedMixin, TimestampMixin):
     processing_status: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
-        default=ProcessingStatus.PENDING.value,
+        default=ProcessingStatus.UPLOADED.value,
         index=True,
-        comment="Processing status (pending, processing, completed, failed)",
+        comment="Processing status (uploaded, parsing, parsed, failed)",
+    )
+
+    # New fields for document upload and parsing
+    content_hash: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        index=True,
+        comment="SHA-256 hash for duplicate detection",
+    )
+
+    language: Mapped[str | None] = mapped_column(
+        String(10),
+        nullable=True,
+        comment="Detected document language (ISO 639-1 code)",
+    )
+
+    page_count: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Number of pages (for PDF/DOCX)",
+    )
+
+    uploaded_by: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.user_id", ondelete="SET NULL"),
+        nullable=False,
+        index=True,
+        comment="User who uploaded the document",
+    )
+
+    original_filename: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        comment="Original filename from upload",
+    )
+
+    mime_type: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        comment="Detected MIME type (e.g., application/pdf)",
     )
 
     document_metadata: Mapped[dict[str, Any] | None] = mapped_column(

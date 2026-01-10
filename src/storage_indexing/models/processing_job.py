@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from enum import Enum
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.storage_indexing.models.base import Base, TenantScopedMixin
@@ -127,6 +127,28 @@ class ProcessingJob(Base, TenantScopedMixin):
         Text,
         nullable=True,
         comment="Error message if job failed",
+    )
+
+    # New fields for progress tracking
+    progress_percent: Mapped[float] = mapped_column(
+        Float,
+        nullable=False,
+        default=0.0,
+        comment="Current progress percentage (0-100)",
+    )
+
+    estimated_time_remaining: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Estimated time remaining in seconds",
+    )
+
+    started_by: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.user_id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+        comment="User who initiated the job",
     )
 
     created_at: Mapped[datetime] = mapped_column(

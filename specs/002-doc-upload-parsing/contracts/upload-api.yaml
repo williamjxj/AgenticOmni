@@ -1,0 +1,571 @@
+openapi: 3.0.3
+info:
+  title: Document Upload API
+  version: 1.0.0
+  description: |
+    API endpoints for uploading documents to AgenticOmni platform.
+    Supports single uploads, batch uploads, and resumable uploads for large files.
+  contact:
+    name: AgenticOmni Development Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.agenticomni.com/api/v1
+    description: Production
+
+security:
+  - bearerAuth: []
+
+paths:
+  /documents/upload:
+    post:
+      tags:
+        - Upload
+      summary: Upload a single document
+      description: |
+        Upload a single document file. The file is validated, scanned for malware,
+        and queued for asynchronous parsing. Returns document ID and processing job ID.
+      operationId: uploadDocument
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Document file (PDF, DOCX, or TXT)
+                title:
+                  type: string
+                  maxLength: 255
+                  description: Optional document title
+                  example: "Q4 Financial Report"
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: Optional tags for categorization
+                  example: ["finance", "quarterly", "2025"]
+                metadata:
+                  type: object
+                  description: Additional metadata as JSON
+                  example: {"department": "finance", "confidential": true}
+      responses:
+        '201':
+          description: Document uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Invalid file or request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidFileType:
+                  value:
+                    error: "Invalid file type"
+                    message: "Only PDF, DOCX, and TXT files are allowed"
+                    code: "INVALID_FILE_TYPE"
+                fileTooLarge:
+                  value:
+                    error: "File too large"
+                    message: "File size exceeds 50MB limit"
+                    code: "FILE_TOO_LARGE"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Payload too large"
+                message: "Request body exceeds maximum allowed size"
+                code: "PAYLOAD_TOO_LARGE"
+        '507':
+          description: Storage quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Quota exceeded"
+                message: "Storage quota exceeded. Current usage: 9.5GB / 10GB"
+                code: "QUOTA_EXCEEDED"
+
+  /documents/batch-upload:
+    post:
+      tags:
+        - Upload
+      summary: Upload multiple documents
+      description: |
+        Upload multiple documents in a single request. Each file is processed
+        independently. Returns an array of document IDs and job IDs.
+      operationId: batchUploadDocuments
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - files
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Multiple document files
+                  minItems: 1
+                  maxItems: 10
+      responses:
+        '202':
+          description: Batch upload accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchUploadResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Invalid batch upload"
+                message: "At least one file is required"
+                code: "INVALID_BATCH"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: Batch too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Batch too large"
+                message: "Maximum 10 files allowed per batch"
+                code: "BATCH_TOO_LARGE"
+        '507':
+          $ref: '#/components/responses/QuotaExceeded'
+
+  /documents/upload/resumable:
+    post:
+      tags:
+        - Upload
+        - Resumable
+      summary: Initialize resumable upload
+      description: |
+        Create a resumable upload session for large files. Returns session ID
+        and upload URL for sending file chunks.
+      operationId: initializeResumableUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResumableUploadInit'
+      responses:
+        '201':
+          description: Upload session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumableUploadSession'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '507':
+          $ref: '#/components/responses/QuotaExceeded'
+
+  /documents/upload/resumable/{session_id}:
+    patch:
+      tags:
+        - Upload
+        - Resumable
+      summary: Upload file chunk
+      description: |
+        Upload a chunk of the file for a resumable upload session.
+        Use Content-Range header to specify byte range.
+      operationId: uploadChunk
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      headers:
+        Content-Range:
+          description: Byte range of this chunk (e.g., "bytes 0-5242879/52428800")
+          required: true
+          schema:
+            type: string
+            example: "bytes 0-5242879/52428800"
+      responses:
+        '200':
+          description: Chunk uploaded, more chunks expected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkUploadResponse'
+        '201':
+          description: Final chunk uploaded, document created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Invalid chunk or range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Invalid byte range"
+                message: "Byte range does not match expected offset"
+                code: "INVALID_RANGE"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Upload session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Session not found"
+                message: "Upload session does not exist or has expired"
+                code: "SESSION_NOT_FOUND"
+        '410':
+          description: Session expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Session expired"
+                message: "Upload session expired after 24 hours of inactivity"
+                code: "SESSION_EXPIRED"
+
+    get:
+      tags:
+        - Upload
+        - Resumable
+      summary: Get upload session status
+      description: Check the current progress of a resumable upload session
+      operationId: getUploadSessionStatus
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumableUploadSession'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Upload
+        - Resumable
+      summary: Cancel resumable upload
+      description: Cancel an in-progress upload session and delete temporary files
+      operationId: cancelUploadSession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '204':
+          description: Session cancelled successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      description: Upload session UUID
+      schema:
+        type: string
+        format: uuid
+      example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+
+  schemas:
+    UploadResponse:
+      type: object
+      required:
+        - document_id
+        - job_id
+        - status
+      properties:
+        document_id:
+          type: integer
+          description: Unique document identifier
+          example: 101
+        job_id:
+          type: integer
+          description: Processing job identifier for tracking
+          example: 2001
+        status:
+          type: string
+          enum: [uploaded, parsing]
+          description: Current document status
+          example: "parsing"
+        filename:
+          type: string
+          description: Stored filename
+          example: "doc_20260109_abc123.pdf"
+        message:
+          type: string
+          description: Success message
+          example: "Document uploaded successfully and queued for processing"
+
+    BatchUploadResponse:
+      type: object
+      required:
+        - total
+        - successful
+        - failed
+        - uploads
+      properties:
+        total:
+          type: integer
+          description: Total number of files in batch
+          example: 5
+        successful:
+          type: integer
+          description: Number of successfully uploaded files
+          example: 4
+        failed:
+          type: integer
+          description: Number of failed uploads
+          example: 1
+        uploads:
+          type: array
+          items:
+            type: object
+            properties:
+              filename:
+                type: string
+                example: "report1.pdf"
+              status:
+                type: string
+                enum: [success, error]
+                example: "success"
+              document_id:
+                type: integer
+                example: 102
+              job_id:
+                type: integer
+                example: 2002
+              error:
+                type: string
+                example: null
+
+    ResumableUploadInit:
+      type: object
+      required:
+        - filename
+        - file_size
+      properties:
+        filename:
+          type: string
+          maxLength: 255
+          description: Original filename
+          example: "Large Document.pdf"
+        file_size:
+          type: integer
+          minimum: 1
+          maximum: 52428800
+          description: Total file size in bytes
+          example: 45000000
+        mime_type:
+          type: string
+          description: MIME type (detected if not provided)
+          example: "application/pdf"
+        chunk_size:
+          type: integer
+          minimum: 1048576
+          maximum: 10485760
+          description: Preferred chunk size in bytes (1MB-10MB)
+          default: 5242880
+          example: 5242880
+
+    ResumableUploadSession:
+      type: object
+      required:
+        - session_id
+        - status
+        - uploaded_bytes
+        - total_bytes
+        - expires_at
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          description: Unique session identifier
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        status:
+          type: string
+          enum: [active, completed, cancelled, expired]
+          description: Session status
+          example: "active"
+        filename:
+          type: string
+          description: Original filename
+          example: "Large Document.pdf"
+        uploaded_bytes:
+          type: integer
+          description: Bytes uploaded so far
+          example: 25000000
+        total_bytes:
+          type: integer
+          description: Total file size
+          example: 45000000
+        progress_percent:
+          type: number
+          format: float
+          description: Upload progress percentage
+          example: 55.56
+        chunk_size:
+          type: integer
+          description: Chunk size in bytes
+          example: 5242880
+        expires_at:
+          type: string
+          format: date-time
+          description: Session expiration timestamp
+          example: "2026-01-10T10:30:00Z"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-09T10:30:00Z"
+
+    ChunkUploadResponse:
+      type: object
+      required:
+        - uploaded_bytes
+        - total_bytes
+        - progress_percent
+      properties:
+        uploaded_bytes:
+          type: integer
+          example: 30000000
+        total_bytes:
+          type: integer
+          example: 45000000
+        progress_percent:
+          type: number
+          format: float
+          example: 66.67
+        message:
+          type: string
+          example: "Chunk uploaded successfully"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - code
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "Invalid file type"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Only PDF, DOCX, and TXT files are allowed"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "INVALID_FILE_TYPE"
+        details:
+          type: object
+          description: Additional error details
+          example: {"allowed_types": ["pdf", "docx", "txt"]}
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Unauthorized"
+            message: "Authentication token is missing or invalid"
+            code: "UNAUTHORIZED"
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Forbidden"
+            message: "You do not have permission to upload documents"
+            code: "FORBIDDEN"
+
+    QuotaExceeded:
+      description: Storage quota exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Quota exceeded"
+            message: "Storage quota exceeded. Contact your administrator to increase quota."
+            code: "QUOTA_EXCEEDED"
+
+tags:
+  - name: Upload
+    description: Document upload operations
+  - name: Resumable
+    description: Resumable upload for large files

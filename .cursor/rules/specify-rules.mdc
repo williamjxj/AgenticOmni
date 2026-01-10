@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2026-01-09
 
 ## Active Technologies
+- Python 3.12+ + FastAPI 0.109+, Docling (IBM), python-magic (file type detection), python-multipart (file uploads), aiofiles (async I/O), Celery/Dramatiq (task queue), boto3 (S3 storage) (002-doc-upload-parsing)
+- PostgreSQL 16 with pgvector (metadata + chunks), S3-compatible object storage or local filesystem (original files), Redis 7 (job queue + caching) (002-doc-upload-parsing)
 
 - Python 3.12+ (backend), TypeScript 5.x (frontend), Node.js 18+ + FastAPI, SQLAlchemy, Alembic, LangChain, LlamaIndex, psycopg2-binary, pgvector, Next.js, Tailwind CSS, shadcn/ui (001-app-skeleton-init)
 
@@ -22,6 +24,7 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12+ (backend), TypeScript 5.x (frontend), Node.js 18+: Follow standard conventions
 
 ## Recent Changes
+- 002-doc-upload-parsing: Added Python 3.12+ + FastAPI 0.109+, Docling (IBM), python-magic (file type detection), python-multipart (file uploads), aiofiles (async I/O), Celery/Dramatiq (task queue), boto3 (S3 storage)
 
 - 001-app-skeleton-init: Added Python 3.12+ (backend), TypeScript 5.x (frontend), Node.js 18+ + FastAPI, SQLAlchemy, Alembic, LangChain, LlamaIndex, psycopg2-binary, pgvector, Next.js, Tailwind CSS, shadcn/ui
 

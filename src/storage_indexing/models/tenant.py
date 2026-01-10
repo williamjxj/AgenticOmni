@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from sqlalchemy import JSON, Integer, String
+from sqlalchemy import JSON, BigInteger, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.storage_indexing.models.base import Base, TimestampMixin
@@ -59,6 +59,21 @@ class Tenant(Base, TimestampMixin):
         nullable=False,
         default="active",
         comment="Tenant status (active, suspended, inactive)",
+    )
+
+    # New fields for storage quota management
+    storage_quota_bytes: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=10737418240,  # 10GB default
+        comment="Maximum storage quota in bytes",
+    )
+
+    storage_used_bytes: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+        comment="Current storage usage in bytes",
     )
 
     def __repr__(self) -> str:

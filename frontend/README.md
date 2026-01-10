@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AgenticOmni Frontend
+
+Next.js 16 frontend for the AgenticOmni document intelligence platform.
+
+## Features
+
+- ✅ **Modern Stack**: Next.js 16, React 19, TypeScript
+- ✅ **Responsive UI**: Tailwind CSS with shadcn/ui components
+- ✅ **Document Upload**: Drag-drop file uploader with progress tracking
+- ✅ **Real-time Updates**: Job status polling with progress bars
+- ✅ **Document Management**: List, view, and manage uploaded documents
+- ✅ **Type-Safe API**: Complete TypeScript API client
+- ✅ **Dark Mode**: Full dark mode support
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Environment
+
+Create a `.env.local` file (see `README_ENV.md` for details):
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
+
+### 3. Start Backend
+
+Ensure the backend is running on port 8000:
+
+```bash
+cd ..
+source venv/bin/activate
+uvicorn src.api.main:app --reload
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+frontend/
+├── app/
+│   ├── page.tsx              # Landing page
+│   ├── upload/page.tsx       # Upload interface
+│   ├── documents/page.tsx    # Document list
+│   └── docs/page.tsx         # Documentation
+├── components/
+│   ├── upload/
+│   │   ├── file-uploader.tsx      # Drag-drop uploader
+│   │   └── progress-tracker.tsx   # Job progress
+│   └── ui/                   # shadcn/ui components
+├── lib/
+│   ├── api/
+│   │   ├── client.ts         # API client
+│   │   └── types.ts          # TypeScript types
+│   └── utils.ts              # Utility functions
+└── README.md
+```
 
-## Learn More
+## Available Pages
 
-To learn more about Next.js, take a look at the following resources:
+- **/** - Landing page with features overview
+- **/upload** - Document upload interface with drag-drop
+- **/documents** - View and manage uploaded documents
+- **/docs** - Documentation and API reference
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Integration
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The frontend communicates with the backend via REST API. All API calls are handled through the centralized API client in `lib/api/client.ts`.
 
-## Deploy on Vercel
+**Example:**
+```typescript
+import { apiClient } from '@/lib/api/client';
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+// Upload a document
+const result = await apiClient.uploadDocument(file);
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+// Check job status
+const status = await apiClient.getJobStatus(jobId);
+```
+
+See `docs/FRONTEND_INTEGRATION.md` in the project root for complete integration guide.
+
+## Building for Production
+
+```bash
+npm run build
+npm run start
+```
+
+## Tech Stack
+
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **UI Components**: shadcn/ui (Radix UI primitives)
+- **State**: React hooks (useState, useEffect)
+- **API**: Fetch API with TypeScript client
+
+## Features Demonstrated
+
+### Document Upload
+- Single file upload (up to 50MB)
+- Drag and drop interface
+- Multiple file selection
+- Progress tracking
+- Error handling
+
+### Processing Status
+- Real-time job status updates
+- Progress bars with percentage
+- Status badges (uploaded, processing, completed, failed)
+- Automatic polling (2-second intervals)
+
+### Document Management
+- Paginated document list
+- Status filtering
+- File metadata display
+- Responsive design
+
+## Development Notes
+
+- Uses Next.js Server Components by default
+- Client components marked with `'use client'`
+- All API calls are client-side
+- Dark mode via Tailwind CSS
+- Responsive design with mobile-first approach
+
+## Version
+
+**v0.2.0** - Document Upload & Processing MVP

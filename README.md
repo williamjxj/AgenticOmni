@@ -1,20 +1,42 @@
 # AgenticOmni: AI-Powered Document Intelligence Platform
 
-**Status**: 🚧 Application Skeleton - Foundation Phase  
-**Version**: 0.1.0  
+**Status**: ✅ MVP Complete - Document Upload & Processing Pipeline  
+**Version**: 0.2.0  
 **License**: Proprietary
 
 ## 📄 Overview
 
-AgenticOmni is an enterprise-grade AI document intelligence platform built on an ETL-to-RAG pipeline architecture. The system transforms complex multi-format documents (PDFs, DOCX, PPTX, images, audio, video) into searchable, intelligent knowledge bases powered by retrieval-augmented generation.
+AgenticOmni is an enterprise-grade AI document intelligence platform built on an ETL-to-RAG pipeline architecture. The system transforms complex multi-format documents (PDF, DOCX, TXT) into searchable, intelligent knowledge bases powered by retrieval-augmented generation.
+
+### 🎯 Current Features (v0.2.0)
+
+#### Document Upload & Processing
+- ✅ **Multi-Format Support**: PDF (Docling), DOCX (python-docx), TXT
+- ✅ **Single & Batch Upload**: Upload 1-10 documents at once
+- ✅ **Smart Validation**: File type detection (magic bytes), size limits, quota management
+- ✅ **Async Processing**: Background parsing with Dramatiq task queue
+- ✅ **Progress Tracking**: Real-time status updates (0-100% progress)
+- ✅ **RAG-Optimized Chunking**: 512-token chunks with 50-token overlap
+- ✅ **Storage Options**: Local filesystem or S3-compatible object storage
+- ✅ **Security**: Malware scanning (ClamAV), content hashing for duplicates
+
+#### API Endpoints
+- `POST /api/v1/documents/upload` - Single document upload
+- `POST /api/v1/documents/batch-upload` - Batch upload (up to 10 files)
+- `GET /api/v1/documents/{id}` - Get document details
+- `GET /api/v1/documents` - List documents with pagination
+- `GET /api/v1/processing/jobs/{id}` - Get processing job status
+- `POST /api/v1/processing/jobs/{id}/retry` - Retry failed job
+- `POST /api/v1/processing/jobs/{id}/cancel` - Cancel processing job
+- `GET /api/v1/health` - Health check
 
 ### Key Capabilities
 
-- **Multi-Format Ingestion**: Process diverse document types with OCR, NLP, and multimedia extraction
-- **Hybrid Retrieval**: Combine vector search (pgvector) with keyword search for optimal accuracy
-- **Enterprise Security**: Row-level multi-tenancy with RBAC and document-level permissions
-- **Production-Ready**: Async FastAPI backend, PostgreSQL + pgvector, Docker development environment
-- **Modern Frontend**: Next.js 16 with React 19, TypeScript, Tailwind CSS 4, and shadcn/ui components
+- **Multi-Format Ingestion**: Process PDF, DOCX, and TXT documents with intelligent parsing
+- **RAG-Ready Chunking**: Semantic text splitting optimized for vector search
+- **Enterprise Security**: Multi-tenant isolation with per-tenant storage quotas
+- **Production-Ready**: Async FastAPI backend, PostgreSQL + pgvector, Docker environment
+- **Modern Frontend**: Next.js 14 with React, TypeScript, Tailwind CSS, and shadcn/ui components
 
 ## 🏗️ Architecture
 
@@ -57,6 +79,116 @@ frontend/
 | **Frontend** | Next.js 14, TypeScript | Modern React with SSR/SSG |
 | **Styling** | Tailwind CSS, shadcn/ui | Utility-first CSS + accessible components |
 | **Containerization** | Docker Compose | Consistent development environment |
+
+## 📡 API Usage
+
+### Upload a Single Document
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/documents/upload" \
+  -F "file=@document.pdf" \
+  -F "tenant_id=1" \
+  -F "user_id=1"
+```
+
+Response:
+```json
+{
+  "document_id": 123,
+  "filename": "doc_20240109_abc123.pdf",
+  "original_filename": "document.pdf",
+  "file_size": 1024000,
+  "mime_type": "application/pdf",
+  "content_hash": "a1b2c3...",
+  "job_id": 456,
+  "status": "uploaded"
+}
+```
+
+### Upload Multiple Documents (Batch)
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/documents/batch-upload" \
+  -F "files=@doc1.pdf" \
+  -F "files=@doc2.docx" \
+  -F "files=@doc3.txt" \
+  -F "tenant_id=1" \
+  -F "user_id=1"
+```
+
+Response:
+```json
+{
+  "batch_id": "batch_abc123",
+  "total": 3,
+  "successful": 3,
+  "failed": 0,
+  "results": [
+    {
+      "filename": "doc1.pdf",
+      "status": "success",
+      "document_id": 123,
+      "job_id": 456
+    },
+    ...
+  ]
+}
+```
+
+### Check Processing Status
+
+```bash
+curl "http://localhost:8000/api/v1/processing/jobs/456"
+```
+
+Response:
+```json
+{
+  "job_id": 456,
+  "document_id": 123,
+  "status": "processing",
+  "progress_percent": 75,
+  "job_type": "parse_document",
+  "created_at": "2024-01-09T10:00:00Z"
+}
+```
+
+### Supported Formats
+
+| Format | Extension | Parser | Features |
+|--------|-----------|--------|----------|
+| **PDF** | `.pdf` | Docling (IBM) | Tables, images, structure preservation |
+| **Word** | `.docx` | python-docx | Paragraphs, tables, metadata |
+| **Text** | `.txt` | Native | UTF-8, multi-encoding support |
+
+### Configuration
+
+Key environment variables for document upload:
+
+```bash
+# Storage
+STORAGE_BACKEND=local  # or 's3'
+UPLOAD_DIR=./uploads
+MAX_UPLOAD_SIZE_MB=50
+MAX_BATCH_SIZE=10
+
+# Allowed formats
+ALLOWED_FILE_TYPES=pdf,docx,txt
+
+# Processing
+DRAMATIQ_BROKER_URL=redis://localhost:6379/1
+MAX_CONCURRENT_PARSING_JOBS=5
+
+# Chunking for RAG
+CHUNK_SIZE_TOKENS=512
+CHUNK_OVERLAP_TOKENS=50
+MIN_CHUNK_SIZE_TOKENS=100
+
+# Security (optional)
+ENABLE_MALWARE_SCANNING=false
+CLAMAV_HOST=localhost
+CLAMAV_PORT=3310
+```
 
 ## 🚀 Quick Start
 

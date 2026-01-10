@@ -146,6 +146,33 @@ class Settings(BaseSettings):
     )
 
     # ========================================================================
+    # Malware Scanning Configuration
+    # ========================================================================
+    enable_malware_scanning: bool = Field(
+        default=False,
+        description="Enable malware scanning with ClamAV",
+    )
+
+    clamav_host: str = Field(
+        default="localhost",
+        description="ClamAV daemon host",
+    )
+
+    clamav_port: int = Field(
+        default=3310,
+        ge=1,
+        le=65535,
+        description="ClamAV daemon port",
+    )
+
+    clamav_timeout: int = Field(
+        default=30,
+        ge=1,
+        le=300,
+        description="ClamAV scan timeout in seconds",
+    )
+
+    # ========================================================================
     # Redis Configuration
     # ========================================================================
     redis_url: str = Field(
@@ -179,11 +206,21 @@ class Settings(BaseSettings):
     )
 
     # ========================================================================
-    # File Storage Configuration
+    # Document Upload Configuration (T013)
     # ========================================================================
+    storage_backend: str = Field(
+        default="local",
+        description="Storage backend: local or s3",
+    )
+
     upload_dir: str = Field(
         default="./uploads",
         description="Directory for uploaded files (local storage)",
+    )
+
+    temp_upload_dir: str = Field(
+        default="./tmp/uploads",
+        description="Directory for temporary upload chunks",
     )
 
     max_upload_size_mb: int = Field(
@@ -193,32 +230,181 @@ class Settings(BaseSettings):
         description="Maximum file upload size in MB",
     )
 
+    max_batch_size: int = Field(
+        default=10,
+        ge=1,
+        le=50,
+        description="Maximum number of files per batch upload",
+    )
+
     allowed_file_types: str = Field(
-        default="pdf,docx,pptx,txt",
+        default="pdf,docx,txt",
         description="Allowed file types for upload (comma-separated)",
     )
 
-    @field_validator("allowed_file_types", mode="before")
-    @classmethod
-    def parse_allowed_file_types(cls, v: str | list[str] | None) -> str:
-        """Parse allowed file types from list or comma-separated string."""
-        if v is None or v == "":
-            return "pdf,docx,pptx,txt"
-        if isinstance(v, list):
-            return ",".join(v)
-        return v
-
     def get_allowed_file_types_list(self) -> list[str]:
         """Get allowed file types as a list."""
-        return [ft.strip() for ft in self.allowed_file_types.split(",") if ft.strip()]
+        return [ft.strip().lower() for ft in self.allowed_file_types.split(",") if ft.strip()]
 
-    @field_validator("allowed_file_types", mode="before")
-    @classmethod
-    def parse_file_types(cls, v: str | list[str]) -> list[str]:
-        """Parse allowed file types from comma-separated string or list."""
-        if isinstance(v, str):
-            return [ft.strip().lower() for ft in v.split(",") if ft.strip()]
-        return [ft.lower() for ft in v]
+    # Chunking configuration for RAG
+    chunk_size_tokens: int = Field(
+        default=512,
+        ge=100,
+        le=2000,
+        description="Target chunk size in tokens",
+    )
+
+    chunk_overlap_tokens: int = Field(
+        default=50,
+        ge=0,
+        le=500,
+        description="Overlap between chunks in tokens",
+    )
+
+    min_chunk_size_tokens: int = Field(
+        default=100,
+        ge=10,
+        le=1000,
+        description="Minimum chunk size in tokens",
+    )
+
+    # S3 configuration (optional)
+    s3_bucket: str | None = Field(
+        default=None,
+        description="S3 bucket name for document storage",
+    )
+
+    s3_region: str | None = Field(
+        default=None,
+        description="AWS region for S3 bucket",
+    )
+
+    aws_access_key_id: str | None = Field(
+        default=None,
+        description="AWS access key ID",
+    )
+
+    aws_secret_access_key: str | None = Field(
+        default=None,
+        description="AWS secret access key",
+    )
+
+    # ========================================================================
+    # Task Queue Configuration (T014)
+    # ========================================================================
+    dramatiq_broker_url: str = Field(
+        default="redis://localhost:6379/1",
+        description="Dramatiq broker URL (Redis)",
+    )
+
+    dramatiq_result_backend: str = Field(
+        default="redis://localhost:6379/1",
+        description="Dramatiq result backend URL",
+    )
+
+    max_concurrent_parsing_jobs: int = Field(
+        default=5,
+        ge=1,
+        le=50,
+        description="Maximum concurrent parsing jobs",
+    )
+
+    parsing_timeout_seconds: int = Field(
+        default=300,
+        ge=30,
+        le=3600,
+        description="Parsing timeout in seconds",
+    )
+
+    # ========================================================================
+    # LLM Configuration (DeepSeek, OpenAI, etc.)
+    # ========================================================================
+    llm_provider: str = Field(
+        default="deepseek",
+        description="LLM provider: deepseek, openai, anthropic",
+    )
+
+    # DeepSeek Configuration
+    deepseek_api_key: str | None = Field(
+        default=None,
+        description="DeepSeek API key for chat completions",
+    )
+
+    deepseek_api_base: str = Field(
+        default="https://api.deepseek.com/v1",
+        description="DeepSeek API base URL",
+    )
+
+    deepseek_model: str = Field(
+        default="deepseek-chat",
+        description="DeepSeek model name (deepseek-chat, deepseek-coder)",
+    )
+
+    deepseek_temperature: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=2.0,
+        description="DeepSeek temperature for response randomness",
+    )
+
+    deepseek_max_tokens: int = Field(
+        default=4096,
+        ge=1,
+        le=32768,
+        description="DeepSeek max tokens per response",
+    )
+
+    # Embedding Configuration
+    embedding_provider: str = Field(
+        default="openai",
+        description="Embedding provider: openai, huggingface, deepseek",
+    )
+
+    embedding_model: str = Field(
+        default="text-embedding-3-small",
+        description="Embedding model name",
+    )
+
+    embedding_dimension: int = Field(
+        default=1536,
+        ge=128,
+        le=4096,
+        description="Embedding vector dimension (must match vector_dimensions)",
+    )
+
+    # RAG Configuration
+    rag_enabled: bool = Field(
+        default=True,
+        description="Enable RAG query functionality",
+    )
+
+    rag_temperature: float = Field(
+        default=0.3,
+        ge=0.0,
+        le=1.0,
+        description="RAG query temperature (lower = more factual)",
+    )
+
+    rag_top_k: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Number of chunks to retrieve for RAG context",
+    )
+
+    rag_context_window: int = Field(
+        default=8000,
+        ge=1000,
+        le=32000,
+        description="Maximum context window size for RAG queries",
+    )
+
+    rag_similarity_threshold: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="Minimum similarity score for chunk retrieval",
+    )
 
     # ========================================================================
     # Property Methods

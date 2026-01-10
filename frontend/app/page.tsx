@@ -27,16 +27,16 @@ export default function HomePage() {
               AgenticOmni
             </h1>
             <nav className="flex gap-4">
-              <Link href="/docs" passHref legacyBehavior>
-                <Button variant="ghost" as="a">
+              <Button variant="ghost" asChild>
+                <Link href="/docs">
                   Documentation
-                </Button>
-              </Link>
-              <Link href="/api/v1/docs" target="_blank" passHref legacyBehavior>
-                <Button variant="outline" as="a">
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="http://localhost:8000/api/v1/docs" target="_blank" rel="noopener noreferrer">
                   API Docs
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </nav>
           </div>
         </div>
@@ -55,9 +55,11 @@ export default function HomePage() {
               advanced ETL-to-RAG pipeline
             </p>
             <div className="flex gap-4 justify-center">
-              <Button size="lg">Get Started</Button>
-              <Button size="lg" variant="outline">
-                Learn More
+              <Button size="lg" asChild>
+                <Link href="/upload">Get Started</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/docs">Learn More</Link>
               </Button>
             </div>
           </div>
@@ -71,45 +73,45 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             <Card>
               <CardHeader>
-                <CardTitle>Document Processing</CardTitle>
+                <CardTitle>📄 Multi-Format Upload</CardTitle>
                 <CardDescription>
-                  Multi-format document ingestion with OCR
+                  Single, batch, and resumable uploads up to 5GB
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Process PDFs, images, DOCX, and more. Extract text, tables,
-                  and metadata with high accuracy using advanced OCR and NLP.
+                  Upload PDF, DOCX, and TXT files. Support for single files (50MB),
+                  batch uploads (1-10 files), and resumable uploads for large files up to 5GB.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>RAG Pipeline</CardTitle>
+                <CardTitle>🤖 DeepSeek LLM Integration</CardTitle>
                 <CardDescription>
-                  Retrieval-Augmented Generation for Q&A
+                  Cost-effective RAG with 32K context window
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Ask questions about your documents using natural language.
-                  Powered by LangChain and vector search with pgvector.
+                  RAG-optimized document chunking with DeepSeek LLM integration.
+                  Smart semantic chunking (512 tokens) with embedding support for semantic search.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Enterprise Ready</CardTitle>
+                <CardTitle>⚡ Enterprise Performance</CardTitle>
                 <CardDescription>
-                  Secure, scalable, multi-tenant architecture
+                  Async processing with real-time progress tracking
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Built for enterprise with row-level tenant isolation, role-based
-                  access control, and comprehensive audit logging.
+                  Multi-tenant architecture with async processing, storage quotas,
+                  byte-level progress tracking, and Prometheus-compatible metrics.
                 </p>
               </CardContent>
             </Card>
@@ -137,10 +139,10 @@ export default function HomePage() {
                 <div>
                   <h4 className="font-semibold mb-2">AI/ML</h4>
                   <ul className="space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>LangChain</li>
-                    <li>LlamaIndex</li>
-                    <li>OpenAI</li>
-                    <li>Anthropic</li>
+                    <li>DeepSeek LLM</li>
+                    <li>Docling (IBM)</li>
+                    <li>OpenAI Embeddings</li>
+                    <li>Tiktoken</li>
                   </ul>
                 </div>
                 <div>
@@ -157,8 +159,8 @@ export default function HomePage() {
                   <ul className="space-y-1 text-slate-600 dark:text-slate-400">
                     <li>Docker</li>
                     <li>Redis</li>
+                    <li>Dramatiq</li>
                     <li>pgvector</li>
-                    <li>Alembic</li>
                   </ul>
                 </div>
               </div>
@@ -171,7 +173,7 @@ export default function HomePage() {
       <footer className="border-t bg-white/50 backdrop-blur-sm dark:bg-slate-950/50 mt-16">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-sm text-slate-600 dark:text-slate-400">
-            <p>AgenticOmni v0.1.0 - AI-Powered Document Intelligence Platform</p>
+            <p>AgenticOmni v0.2.0 - AI-Powered Document Intelligence Platform</p>
             <p className="mt-2">
               Built with ❤️ by Best IT Consultants
             </p>

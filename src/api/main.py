@@ -11,11 +11,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.middleware import (
+    ErrorHandlerMiddleware,
     LoggingMiddleware,
     RequestIDMiddleware,
-    add_exception_handlers,
 )
-from src.api.routes import health
+from src.api.routes import documents, health, metrics, processing
 from src.shared.config import settings
 from src.shared.logging_config import configure_logging, get_logger
 from src.storage_indexing.database import close_db, init_db
@@ -91,11 +91,9 @@ def create_app() -> FastAPI:
     )
 
     # Add custom middleware (order matters: last added = first executed)
+    app.add_middleware(ErrorHandlerMiddleware)
     app.add_middleware(LoggingMiddleware)
     app.add_middleware(RequestIDMiddleware)
-
-    # Register exception handlers
-    add_exception_handlers(app)
 
     # Register routes
     app.include_router(
@@ -103,6 +101,9 @@ def create_app() -> FastAPI:
         prefix=f"/api/{settings.api_version}",
         tags=["health"],
     )
+    app.include_router(documents.router)
+    app.include_router(processing.router)
+    app.include_router(metrics.router)
 
     logger.info(
         "fastapi_app_created",

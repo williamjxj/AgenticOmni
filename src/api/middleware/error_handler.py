@@ -1,163 +1,204 @@
-"""Global exception handler for FastAPI application."""
+"""Global error handler middleware for standardized error responses.
+
+This middleware catches all exceptions and returns standardized JSON error
+responses with appropriate HTTP status codes.
+"""
+
+from typing import Callable
+
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 import structlog
-from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
-from pydantic import ValidationError
-from sqlalchemy.exc import SQLAlchemyError
 
 from src.shared.exceptions import (
     AgenticOmniException,
+    AuthenticationError,
+    AuthorizationError,
     ConfigurationError,
+    ConflictError,
     DatabaseError,
+    DocumentProcessingError,
+    ExternalServiceError,
+    FileTooLargeError,
+    FileTypeNotAllowedError,
+    MalwareScanFailedError,
+    NotFoundError,
+    QuotaExceededError,
+    RateLimitError,
+    TenantIsolationError,
+    ValidationError,
 )
 
 logger = structlog.get_logger(__name__)
 
 
-def add_exception_handlers(app: FastAPI) -> None:
-    """Register global exception handlers for the FastAPI application.
-
-    Handles:
-    - Custom application exceptions (AgenticOmniException)
-    - Database errors (SQLAlchemyError)
-    - Validation errors (Pydantic ValidationError)
-    - Generic exceptions (catch-all)
-
-    All errors are logged with structured logging and return consistent JSON responses.
-
-    Args:
-        app: FastAPI application instance
-
+class ErrorHandlerMiddleware(BaseHTTPMiddleware):
+    """Middleware for standardized error handling.
+    
+    Catches all exceptions and returns JSON responses with:
+    - Appropriate HTTP status codes
+    - Consistent error structure
+    - Request ID for tracking
+    - Detailed logging
+    
     Example:
-        >>> app = FastAPI()
-        >>> add_exception_handlers(app)
+        >>> app.add_middleware(ErrorHandlerMiddleware)
     """
 
-    @app.exception_handler(AgenticOmniException)
-    async def handle_agenti_exception(request: Request, exc: AgenticOmniException) -> JSONResponse:
-        """Handle custom application exceptions.
-
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        """Process request and handle errors.
+        
         Args:
             request: Incoming request
-            exc: Custom exception
-
+            call_next: Next middleware/handler in chain
+            
         Returns:
-            JSONResponse: Error response with appropriate status code
+            Response or JSONResponse with error details
         """
+        try:
+            response = await call_next(request)
+            return response
+            
+        except Exception as exc:
+            return await self._handle_exception(request, exc)
+
+    async def _handle_exception(self, request: Request, exc: Exception) -> JSONResponse:
+        """Handle exception and return standardized error response.
+        
+        Args:
+            request: Incoming request
+            exc: Exception that was raised
+            
+        Returns:
+            JSONResponse with error details
+        """
+        # Get request ID from request state
         request_id = getattr(request.state, "request_id", "unknown")
-
-        logger.error(
-            "application_error",
-            request_id=request_id,
-            error_type=type(exc).__name__,
-            error_message=str(exc),
-            path=request.url.path,
-        )
-
+        
         # Map exception types to HTTP status codes
-        status_code_map = {
-            ConfigurationError: status.HTTP_500_INTERNAL_SERVER_ERROR,
-            DatabaseError: status.HTTP_503_SERVICE_UNAVAILABLE,
+        status_code = 500
+        error_type = "internal_error"
+        error_message = "An internal server error occurred"
+        error_details = {}
+        
+        if isinstance(exc, ValidationError):
+            status_code = 400
+            error_type = "validation_error"
+            error_message = str(exc)
+            error_details = getattr(exc, "details", {})
+            
+        elif isinstance(exc, FileTypeNotAllowedError):
+            status_code = 400
+            error_type = "file_type_not_allowed"
+            error_message = str(exc)
+            error_details = {
+                "file_type": exc.file_type,
+                "allowed_types": exc.allowed_types,
+            }
+            
+        elif isinstance(exc, FileTooLargeError):
+            status_code = 413
+            error_type = "file_too_large"
+            error_message = str(exc)
+            error_details = {
+                "file_size": exc.file_size,
+                "max_size": exc.max_size,
+            }
+            
+        elif isinstance(exc, QuotaExceededError):
+            status_code = 413
+            error_type = "quota_exceeded"
+            error_message = str(exc)
+            error_details = {
+                "used_bytes": exc.used_bytes,
+                "quota_bytes": exc.quota_bytes,
+            }
+            
+        elif isinstance(exc, MalwareScanFailedError):
+            status_code = 400
+            error_type = "malware_detected"
+            error_message = str(exc)
+            error_details = {"virus_name": exc.virus_name}
+            
+        elif isinstance(exc, AuthenticationError):
+            status_code = 401
+            error_type = "authentication_error"
+            error_message = str(exc)
+            
+        elif isinstance(exc, AuthorizationError):
+            status_code = 403
+            error_type = "authorization_error"
+            error_message = str(exc)
+            
+        elif isinstance(exc, NotFoundError):
+            status_code = 404
+            error_type = "not_found"
+            error_message = str(exc)
+            
+        elif isinstance(exc, ConflictError):
+            status_code = 409
+            error_type = "conflict"
+            error_message = str(exc)
+            
+        elif isinstance(exc, RateLimitError):
+            status_code = 429
+            error_type = "rate_limit_exceeded"
+            error_message = str(exc)
+            
+        elif isinstance(exc, TenantIsolationError):
+            status_code = 403
+            error_type = "tenant_isolation_violation"
+            error_message = "Access denied"
+            # Log critical security error
+            logger.critical(
+                "Tenant isolation violation",
+                request_id=request_id,
+                path=request.url.path,
+                error=str(exc),
+            )
+            
+        elif isinstance(exc, (DatabaseError, ConfigurationError, ExternalServiceError, DocumentProcessingError)):
+            status_code = 500
+            error_type = "internal_error"
+            error_message = "An internal server error occurred"
+            # Don't expose internal error details to client
+            
+        elif isinstance(exc, AgenticOmniException):
+            # Generic application exception
+            status_code = 500
+            error_type = "application_error"
+            error_message = str(exc)
+        
+        # Log the error
+        log_level = "error" if status_code >= 500 else "warning"
+        log_func = getattr(logger, log_level)
+        log_func(
+            "Request failed",
+            request_id=request_id,
+            method=request.method,
+            path=request.url.path,
+            status_code=status_code,
+            error_type=error_type,
+            error_message=str(exc),
+            exception_type=type(exc).__name__,
+        )
+        
+        # Build error response
+        error_response = {
+            "error": {
+                "type": error_type,
+                "message": error_message,
+                "request_id": request_id,
+            }
         }
-
-        status_code = status_code_map.get(type(exc), status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
+        # Add details if present
+        if error_details:
+            error_response["error"]["details"] = error_details
+        
         return JSONResponse(
             status_code=status_code,
-            content={
-                "error": type(exc).__name__,
-                "message": str(exc),
-                "request_id": request_id,
-            },
-        )
-
-    @app.exception_handler(SQLAlchemyError)
-    async def handle_database_error(request: Request, exc: SQLAlchemyError) -> JSONResponse:
-        """Handle database errors.
-
-        Args:
-            request: Incoming request
-            exc: SQLAlchemy exception
-
-        Returns:
-            JSONResponse: Error response with 503 status
-        """
-        request_id = getattr(request.state, "request_id", "unknown")
-
-        logger.error(
-            "database_error",
-            request_id=request_id,
-            error_type=type(exc).__name__,
-            error_message=str(exc),
-            path=request.url.path,
-        )
-
-        return JSONResponse(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={
-                "error": "DatabaseError",
-                "message": "Database operation failed. Please try again later.",
-                "request_id": request_id,
-            },
-        )
-
-    @app.exception_handler(ValidationError)
-    async def handle_validation_error(request: Request, exc: ValidationError) -> JSONResponse:
-        """Handle Pydantic validation errors.
-
-        Args:
-            request: Incoming request
-            exc: Pydantic validation exception
-
-        Returns:
-            JSONResponse: Error response with 422 status
-        """
-        request_id = getattr(request.state, "request_id", "unknown")
-
-        logger.warning(
-            "validation_error",
-            request_id=request_id,
-            errors=exc.errors(),
-            path=request.url.path,
-        )
-
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={
-                "error": "ValidationError",
-                "message": "Request validation failed",
-                "details": exc.errors(),
-                "request_id": request_id,
-            },
-        )
-
-    @app.exception_handler(Exception)
-    async def handle_generic_exception(request: Request, exc: Exception) -> JSONResponse:
-        """Handle all unhandled exceptions.
-
-        Args:
-            request: Incoming request
-            exc: Generic exception
-
-        Returns:
-            JSONResponse: Error response with 500 status
-        """
-        request_id = getattr(request.state, "request_id", "unknown")
-
-        logger.exception(
-            "unhandled_exception",
-            request_id=request_id,
-            error_type=type(exc).__name__,
-            error_message=str(exc),
-            path=request.url.path,
-        )
-
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "error": "InternalServerError",
-                "message": "An unexpected error occurred. Please try again later.",
-                "request_id": request_id,
-            },
+            content=error_response,
         )
