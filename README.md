@@ -292,31 +292,45 @@ See `.env.example` for complete configuration options with documentation.
 
 ## 📚 Documentation
 
-### 📖 Core Documentation (Version Controlled)
+### 📖 Core Documentation
 
 All documentation follows [Semantic Versioning](https://semver.org/) with change tracking in [CHANGELOG.md](./docs/CHANGELOG.md).
 
-- **[Documentation Index](./docs/README.md)** - Complete documentation catalog with versioning standards
-- **[Implementation Summary](./docs/implementation-summary.md)** v1.0.0 - Complete implementation overview with diagrams
-- **[Versioning Guide](./docs/VERSIONING_GUIDE.md)** v1.0.0 - Quick reference for documentation versioning
-- **[CHANGELOG](./docs/CHANGELOG.md)** - Documentation change history
+- **[Documentation Index](./docs/README.md)** - Complete documentation catalog and navigation
+- **[Implementation Complete](./docs/IMPLEMENTATION_COMPLETE.md)** v0.2.0 - Full implementation report with diagrams
+- **[Implementation Status](./IMPLEMENTATION_STATUS.md)** - Current status (387/387 tasks complete)
+- **[CHANGELOG](./docs/CHANGELOG.md)** - Version history and release notes
 
-### 🎯 Feature Specifications
+### 🎯 Setup & Configuration Guides
 
-- **[Quickstart Guide](./specs/001-app-skeleton-init/quickstart.md)** - Detailed setup instructions
-- **[Implementation Plan](./specs/001-app-skeleton-init/plan.md)** - Technical architecture and decisions
-- **[Data Model](./specs/001-app-skeleton-init/data-model.md)** - Database schema and entities
-- **[API Contracts](./specs/001-app-skeleton-init/contracts/)** - OpenAPI specifications
-- **[Tasks](./specs/001-app-skeleton-init/tasks.md)** - Implementation task breakdown (121 tasks)
+- **[Quickstart Guide](./specs/002-doc-upload-parsing/quickstart.md)** - 10-step setup instructions
+- **[Environment Configuration](./docs/ENV_CONFIGURATION.md)** - Complete environment variable reference
+- **[Frontend Integration](./docs/FRONTEND_INTEGRATION.md)** - Next.js/React integration guide
+- **[Malware Scanning](./docs/MALWARE_SCANNING.md)** - ClamAV setup and troubleshooting
+- **[Production Deploy](./docs/PRODUCTION_DEPLOY.md)** - Production deployment checklist
 
-### 🏛️ Architecture Documents
+### 🏗️ Feature Specifications
 
-- **[Technical Blueprint](./docs/Project_Gemini_Technical_Blueprint.pdf)** - Complete system design
-- **[NotebookLM Setup](./docs/1-notebooklm-setup.md)** - Architecture overview and module design
-- **[ChatGPT Setup](./docs/2-chatgpt-setup.md)** - ETL workflow diagrams
-- **[Requirements](./docs/requirements-1.md)** - Business and technical requirements
+- **[Application Skeleton Spec](./specs/001-app-skeleton-init/spec.md)** - Foundation implementation
+- **[Document Upload & Parsing Spec](./specs/002-doc-upload-parsing/spec.md)** - Document processing feature
+- **[Data Models](./specs/002-doc-upload-parsing/data-model.md)** - Database schema and entities
+- **[API Contracts](./specs/002-doc-upload-parsing/contracts/)** - OpenAPI specifications
+- **[Implementation Plan](./specs/002-doc-upload-parsing/plan.md)** - Technical architecture
+- **[Task Breakdown](./specs/002-doc-upload-parsing/tasks.md)** - 165 tasks (100% complete)
 
-### 📝 Document Validation
+### 📝 Development Guidelines
+
+- **[Contributing Guidelines](./CONTRIBUTING.md)** - How to contribute
+- **[Versioning Guide](./docs/VERSIONING_GUIDE.md)** - Documentation versioning standards
+- **[Version Control Summary](./docs/VERSION_CONTROL_SUMMARY.md)** - Git workflow
+- **[Document Templates](./docs/templates/)** - ADR and technical doc templates
+
+### 🏛️ Architecture References
+
+- **[Technical Blueprint](./docs/Project_Gemini_Technical_Blueprint.pdf)** - Complete system design (PDF)
+- **[Tech Stack Guide](./docs/chatgpt-tech-stack.pdf)** - Technology decisions (PDF)
+
+### 📝 Creating New Documentation
 
 ```bash
 # Validate all documentation follows standards
@@ -324,6 +338,8 @@ python scripts/validate_docs.py
 
 # Create new documentation from template
 cp docs/templates/DOCUMENT_TEMPLATE.md docs/my-new-doc.md
+# or
+cp docs/templates/ADR_TEMPLATE.md docs/adr-001-my-decision.md
 ```
 
 ## 🧪 Testing

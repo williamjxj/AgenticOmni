@@ -1,389 +1,149 @@
 # AgenticOmni Documentation
 
-**Maintained by**: Development Team  
-**Repository**: `/docs`  
-**Version Control**: Semantic Versioning (MAJOR.MINOR.PATCH)
+**Last Updated**: January 10, 2026  
+**Version**: 0.2.0
 
 ---
 
-## 📚 Documentation Index
+## 📚 Quick Navigation
 
-This directory contains all technical and architectural documentation for the AgenticOmni project. All documents follow semantic versioning and change tracking.
+### Implementation & Status
+- **[IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)** - Complete implementation summary (v0.2.0)
+- **[CHANGELOG.md](./CHANGELOG.md)** - Version history and release notes
+- **[../IMPLEMENTATION_STATUS.md](../IMPLEMENTATION_STATUS.md)** - Current implementation status (387/387 tasks)
+- **[../SERVERS_STATUS.md](../SERVERS_STATUS.md)** - Current server and service status
 
-### Core Documentation
+### Setup & Configuration
+- **[../README.md](../README.md)** - Main project README with quick start
+- **[ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)** - Complete environment variable reference
+- **[PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md)** - Production deployment checklist
 
-| Document | Current Version | Last Updated | Purpose |
-|----------|----------------|--------------|---------|
-| [implementation-summary.md](./implementation-summary.md) | 1.0.0 | 2026-01-09 | Complete implementation overview with diagrams |
-| [VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md) | 1.0.0 | 2026-01-09 | Quick reference for documentation versioning |
-| [VERSION_CONTROL_SUMMARY.md](./VERSION_CONTROL_SUMMARY.md) | 1.0.0 | 2026-01-09 | Version control system implementation summary |
-| [CHANGELOG.md](./CHANGELOG.md) | - | 2026-01-09 | Documentation change history |
-| [1-notebooklm-setup.md](./1-notebooklm-setup.md) | 1.0.0 | - | Architecture blueprint and module design |
-| [2-chatgpt-setup.md](./2-chatgpt-setup.md) | 1.0.0 | - | ETL workflow diagrams |
-| [requirements-1.md](./requirements-1.md) | 1.0.0 | - | Business and technical requirements |
+### Feature-Specific Guides
+- **[MALWARE_SCANNING.md](./MALWARE_SCANNING.md)** - ClamAV integration and troubleshooting
+- **[FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)** - Next.js/React integration guide
 
-### Reference Documents
+### Development Guidelines
+- **[VERSION_CONTROL_SUMMARY.md](./VERSION_CONTROL_SUMMARY.md)** - Git workflow and version control
+- **[VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md)** - Documentation versioning standards
+- **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - How to contribute to the project
 
-| Document | Version | Purpose |
-|----------|---------|---------|
-| [Project_Gemini_Technical_Blueprint.pdf](./Project_Gemini_Technical_Blueprint.pdf) | - | Complete system design (PDF) |
-| [chatgpt-tech-stack.pdf](./chatgpt-tech-stack.pdf) | - | Technology stack decisions (PDF) |
+### Specifications
+- **[../specs/001-app-skeleton-init/](../specs/001-app-skeleton-init/)** - Application skeleton specification
+- **[../specs/002-doc-upload-parsing/](../specs/002-doc-upload-parsing/)** - Document upload & parsing specification
 
----
-
-## 📋 Document Versioning Strategy
-
-### Semantic Versioning
-
-All documentation follows **Semantic Versioning 2.0.0**:
-
-```
-MAJOR.MINOR.PATCH
-
-MAJOR: Breaking changes or complete rewrites
-MINOR: New sections, significant additions
-PATCH: Bug fixes, typos, clarifications
-```
-
-### Version Header Template
-
-Every versioned document must include this header:
-
-```markdown
----
-title: "Document Title"
-version: "1.0.0"
-date: "YYYY-MM-DD"
-authors: ["Author Name"]
-reviewers: ["Reviewer Name"]
-status: "draft" | "review" | "approved" | "deprecated"
-changelog: "./CHANGELOG.md#version-100"
----
-```
-
-### Document Status Lifecycle
-
-```mermaid
-graph LR
-    DRAFT[Draft] --> REVIEW[In Review]
-    REVIEW --> APPROVED[Approved]
-    REVIEW --> DRAFT
-    APPROVED --> DEPRECATED[Deprecated]
-    
-    style DRAFT fill:#FFC107
-    style REVIEW fill:#2196F3
-    style APPROVED fill:#4CAF50
-    style DEPRECATED fill:#9E9E9E
-```
-
-| Status | Description | Who Can Edit |
-|--------|-------------|--------------|
-| **draft** | Work in progress, not reviewed | Authors |
-| **review** | Ready for peer review | Authors + Reviewers |
-| **approved** | Reviewed and production-ready | Restricted (requires new version) |
-| **deprecated** | Outdated, replaced by newer version | Read-only |
+### Templates
+- **[templates/ADR_TEMPLATE.md](./templates/ADR_TEMPLATE.md)** - Architecture Decision Record template
+- **[templates/DOCUMENT_TEMPLATE.md](./templates/DOCUMENT_TEMPLATE.md)** - Technical documentation template
 
 ---
 
-## 🔄 Change Management Process
+## 🎯 Getting Started
 
-### 1. Making Changes
+### For New Developers
+1. Read the main **[README.md](../README.md)** for project overview
+2. Follow the **[quickstart guide](../specs/002-doc-upload-parsing/quickstart.md)**
+3. Review **[ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)** for setup
+4. Check **[FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)** for UI development
 
-```bash
-# 1. Create a new branch
-git checkout -b docs/update-implementation-summary
+### For Deployment
+1. Review **[PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md)**
+2. Configure environment variables from **[ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)**
+3. Check **[MALWARE_SCANNING.md](./MALWARE_SCANNING.md)** for ClamAV setup
 
-# 2. Update the document
-# - Increment version in header
-# - Add changes to CHANGELOG.md
-# - Update "Last Updated" date
+### For Contributors
+1. Read **[CONTRIBUTING.md](../CONTRIBUTING.md)**
+2. Follow **[VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md)**
+3. Use **[templates/](./templates/)** for new documentation
 
-# 3. Commit with semantic message
-git commit -m "docs: update implementation summary to v1.1.0 - add Docker troubleshooting"
+---
 
-# 4. Create pull request for review
+## 📊 Documentation Structure
+
 ```
-
-### 2. Version Increment Guidelines
-
-| Change Type | Example | Version Change |
-|-------------|---------|----------------|
-| **Typo fix** | Fix spelling errors | 1.0.0 → 1.0.1 |
-| **Clarification** | Add missing code example | 1.0.0 → 1.0.1 |
-| **New section** | Add "Troubleshooting" section | 1.0.0 → 1.1.0 |
-| **New diagram** | Add architecture diagram | 1.0.0 → 1.1.0 |
-| **Complete rewrite** | Restructure entire document | 1.0.0 → 2.0.0 |
-| **Breaking change** | Change API structure | 1.0.0 → 2.0.0 |
-
-### 3. CHANGELOG Entry Format
-
-```markdown
-## [1.1.0] - 2026-01-10
-
-### Added
-- New "Troubleshooting" section with common issues
-- Docker networking diagram
-
-### Changed
-- Updated database schema diagram to include new index
-- Improved configuration examples
-
-### Fixed
-- Corrected PostgreSQL version number (15 → 16)
-- Fixed broken link to API specification
-
-### Deprecated
-- Old authentication flow (replaced in v2.0.0)
+docs/
+├── README.md (this file)           # Documentation index
+├── IMPLEMENTATION_COMPLETE.md      # Full implementation report
+├── CHANGELOG.md                    # Version history
+├── ENV_CONFIGURATION.md            # Environment setup
+├── FRONTEND_INTEGRATION.md         # Frontend development guide
+├── MALWARE_SCANNING.md             # Security features
+├── PRODUCTION_DEPLOY.md            # Deployment guide
+├── VERSION_CONTROL_SUMMARY.md      # Git workflow
+├── VERSIONING_GUIDE.md             # Documentation standards
+└── templates/                      # Document templates
+    ├── ADR_TEMPLATE.md
+    └── DOCUMENT_TEMPLATE.md
 ```
 
 ---
 
-## 📝 Document Templates
+## 🔍 Find Documentation By Topic
 
-### Creating New Documentation
+### Architecture & Design
+- System Architecture → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)
+- Database Schema → [../specs/002-doc-upload-parsing/data-model.md](../specs/002-doc-upload-parsing/data-model.md)
+- API Contracts → [../specs/002-doc-upload-parsing/contracts/](../specs/002-doc-upload-parsing/contracts/)
 
-Use these templates when creating new documentation:
+### Features & APIs
+- Document Upload → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#upload-endpoints)
+- Document Parsing → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#multi-format-parsing)
+- Malware Scanning → [MALWARE_SCANNING.md](./MALWARE_SCANNING.md)
+- Progress Tracking → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#processing-pipeline)
 
-#### Technical Document Template
+### Development
+- Setup & Installation → [../README.md](../README.md), [quickstart.md](../specs/002-doc-upload-parsing/quickstart.md)
+- Environment Config → [ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)
+- Frontend Development → [FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)
+- Version Control → [VERSION_CONTROL_SUMMARY.md](./VERSION_CONTROL_SUMMARY.md)
 
-```markdown
----
-title: "Document Title"
-version: "1.0.0"
-date: "2026-01-09"
-authors: ["Your Name"]
-reviewers: []
-status: "draft"
-changelog: "./CHANGELOG.md#document-title"
----
-
-# Document Title
-
-**Version**: 1.0.0  
-**Date**: January 9, 2026  
-**Status**: Draft
-
----
-
-## 📋 Overview
-
-Brief description of what this document covers.
+### Deployment & Operations
+- Production Deployment → [PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md)
+- Server Status → [../SERVERS_STATUS.md](../SERVERS_STATUS.md)
+- Monitoring → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#monitoring--metrics)
 
 ---
 
-## Table of Contents
-
-- [Section 1](#section-1)
-- [Section 2](#section-2)
-
----
-
-## Section 1
-
-Content here...
-
----
-
-## Version History
-
-| Version | Date | Changes | Author |
-|---------|------|---------|--------|
-| 1.0.0 | 2026-01-09 | Initial draft | Your Name |
-
----
-
-*Last updated: 2026-01-09*
-```
-
-#### Architecture Decision Record (ADR) Template
-
-```markdown
----
-title: "ADR-XXX: Decision Title"
-version: "1.0.0"
-date: "2026-01-09"
-authors: ["Your Name"]
-status: "proposed" | "accepted" | "rejected" | "superseded"
----
-
-# ADR-XXX: Decision Title
-
-**Status**: Proposed  
-**Date**: 2026-01-09  
-**Deciders**: Team members involved
-
----
-
-## Context
-
-What is the issue we're facing?
-
-## Decision
-
-What did we decide?
-
-## Consequences
-
-What are the positive and negative outcomes?
-
-## Alternatives Considered
-
-What other options did we evaluate?
-
----
-```
-
----
-
-## 🔍 Finding Documentation
-
-### By Topic
-
-- **Architecture**: `implementation-summary.md`, `1-notebooklm-setup.md`
-- **Setup & Installation**: `../README.md`, `../specs/001-app-skeleton-init/quickstart.md`
-- **API Reference**: `implementation-summary.md#api-architecture`, `../specs/001-app-skeleton-init/contracts/`
-- **Database**: `implementation-summary.md#database-schema`, `../specs/001-app-skeleton-init/data-model.md`
-- **Development**: `implementation-summary.md#development-workflow`
-
-### By Version
-
-```bash
-# View document history
-git log --follow docs/implementation-summary.md
-
-# Compare versions
-git diff v1.0.0 v1.1.0 -- docs/implementation-summary.md
-
-# Checkout specific version
-git checkout v1.0.0 -- docs/implementation-summary.md
-```
-
----
-
-## 🎯 Documentation Standards
+## 📝 Documentation Standards
 
 ### Writing Guidelines
+- **Clear**: Write for your audience (developers, stakeholders, users)
+- **Concise**: Be brief but complete
+- **Structured**: Use consistent headings and formatting
+- **Visual**: Include diagrams, tables, code examples
+- **Tested**: Provide working examples and expected output
 
-1. **Clarity**: Write for your audience (developers, stakeholders, users)
-2. **Conciseness**: Be brief but complete
-3. **Structure**: Use consistent headings and formatting
-4. **Visuals**: Include diagrams, tables, code examples
-5. **Examples**: Provide real, working examples
-6. **Links**: Reference related documents
+### Creating New Documentation
+1. Use appropriate template from [templates/](./templates/)
+2. Follow structure and formatting conventions
+3. Update this index (README.md) with new document
+4. Add entry to [CHANGELOG.md](./CHANGELOG.md)
+5. Submit PR for review
 
-### Technical Writing Best Practices
-
-- Use present tense ("The system processes..." not "The system will process...")
-- Use active voice ("The API returns..." not "The result is returned...")
-- Define acronyms on first use
-- Use code blocks with syntax highlighting
-- Include prerequisites and assumptions
-- Provide expected output for commands
-- Link to related documentation
-
-### Diagram Standards
-
-- Use **Mermaid** for version-controlled diagrams
-- Provide alt text for accessibility
-- Keep diagrams simple and focused
-- Use consistent colors and styling
-- Label all nodes and connections
+### Versioning
+- All major documents follow [Semantic Versioning](https://semver.org/)
+- See [VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md) for details
+- Update [CHANGELOG.md](./CHANGELOG.md) with all changes
 
 ---
 
-## 🔧 Maintenance
+## 🤝 Contributing
 
-### Regular Updates Required
+Found an error? Want to improve documentation?
 
-| Document | Update Frequency | Trigger |
-|----------|-----------------|---------|
-| implementation-summary.md | After major features | New phase completion |
-| CHANGELOG.md | Every change | Any documentation update |
-| API specifications | API changes | New/modified endpoints |
-| Database schema | Schema changes | Alembic migrations |
-| Configuration | Setting changes | New environment variables |
-
-### Review Schedule
-
-- **Weekly**: Check for outdated links and broken references
-- **Monthly**: Review documentation structure and organization
-- **Quarterly**: Audit for deprecated content
-- **Per Release**: Update version numbers and changelogs
-
-### Ownership
-
-| Document Category | Owner | Reviewers |
-|------------------|-------|-----------|
-| Architecture | Tech Lead | Senior Developers |
-| API Documentation | Backend Team | QA Team |
-| Setup Guides | DevOps | All Developers |
-| User Guides | Product Team | Support Team |
+1. Check [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines
+2. Create an issue or PR
+3. Follow documentation standards
+4. Request review
 
 ---
 
-## 📊 Documentation Metrics
+## 📞 Support
 
-### Quality Indicators
-
-- ✅ All documents have version headers
-- ✅ CHANGELOG.md is up-to-date
-- ✅ No broken internal links
-- ✅ Code examples are tested and working
-- ✅ Diagrams are current with architecture
-- ✅ All documents have last updated dates
-
-### Review Checklist
-
-- [ ] Version number incremented correctly
-- [ ] CHANGELOG.md updated
-- [ ] All links tested
-- [ ] Code examples verified
-- [ ] Diagrams match current architecture
-- [ ] Grammar and spelling checked
-- [ ] Peer reviewed and approved
+- **Documentation Issues**: Create GitHub issue with `docs` label
+- **Technical Questions**: Check [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)
+- **Setup Problems**: Review [ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)
 
 ---
 
-## 🤝 Contributing to Documentation
-
-### How to Contribute
-
-1. **Find what needs updating**: Check issues or CHANGELOG
-2. **Create a branch**: `docs/update-<document-name>`
-3. **Make changes**: Follow versioning guidelines
-4. **Update CHANGELOG**: Document your changes
-5. **Submit PR**: Request review from document owner
-6. **Address feedback**: Iterate based on reviews
-7. **Merge**: Once approved
-
-### Documentation Issues
-
-Report documentation issues with:
-- Document name and version
-- Section/heading where issue is found
-- Description of the problem
-- Suggested fix (if applicable)
-
----
-
-## 📞 Questions?
-
-- **Documentation Issues**: Create a GitHub issue with `docs` label
-- **Clarifications**: Ask in team chat or code review
-- **Major Changes**: Discuss in architecture review meetings
-
----
-
-## 🔗 Related Resources
-
-- [Main Project README](../README.md)
-- [Specifications Directory](../specs/)
-- [API Contracts](../specs/001-app-skeleton-init/contracts/)
-- [Mermaid Documentation](https://mermaid.js.org/)
-- [Semantic Versioning Spec](https://semver.org/)
-
----
-
-**Last Updated**: January 9, 2026  
-**Maintained By**: Development Team  
-**Questions**: See team documentation channel
+**Maintained By**: AgenticOmni Development Team  
+**Project**: [AgenticOmni](https://github.com/williamjxj/AgenticOmni)
