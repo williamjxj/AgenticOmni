@@ -298,7 +298,7 @@ All documentation follows [Semantic Versioning](https://semver.org/) with change
 
 - **[Documentation Index](./docs/README.md)** - Complete documentation catalog and navigation
 - **[Implementation Complete](./docs/IMPLEMENTATION_COMPLETE.md)** v0.2.0 - Full implementation report with diagrams
-- **[Implementation Status](./IMPLEMENTATION_STATUS.md)** - Current status (387/387 tasks complete)
+- **[Implementation Status](./docs/IMPLEMENTATION_STATUS.md)** - Current status (387/387 tasks complete)
 - **[CHANGELOG](./docs/CHANGELOG.md)** - Version history and release notes
 
 ### 🎯 Setup & Configuration Guides
@@ -320,7 +320,7 @@ All documentation follows [Semantic Versioning](https://semver.org/) with change
 
 ### 📝 Development Guidelines
 
-- **[Contributing Guidelines](./CONTRIBUTING.md)** - How to contribute
+- **[Contributing Guidelines](./docs/CONTRIBUTING.md)** - How to contribute
 - **[Versioning Guide](./docs/VERSIONING_GUIDE.md)** - Documentation versioning standards
 - **[Version Control Summary](./docs/VERSION_CONTROL_SUMMARY.md)** - Git workflow
 - **[Document Templates](./docs/templates/)** - ADR and technical doc templates

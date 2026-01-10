@@ -10,8 +10,8 @@
 ### Implementation & Status
 - **[IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)** - Complete implementation summary (v0.2.0)
 - **[CHANGELOG.md](./CHANGELOG.md)** - Version history and release notes
-- **[../IMPLEMENTATION_STATUS.md](../IMPLEMENTATION_STATUS.md)** - Current implementation status (387/387 tasks)
-- **[../SERVERS_STATUS.md](../SERVERS_STATUS.md)** - Current server and service status
+- **[IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)** - Current implementation status (387/387 tasks)
+- **[SERVERS_STATUS.md](./SERVERS_STATUS.md)** - Current server and service status
 
 ### Setup & Configuration
 - **[../README.md](../README.md)** - Main project README with quick start
@@ -25,7 +25,7 @@
 ### Development Guidelines
 - **[VERSION_CONTROL_SUMMARY.md](./VERSION_CONTROL_SUMMARY.md)** - Git workflow and version control
 - **[VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md)** - Documentation versioning standards
-- **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - How to contribute to the project
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - How to contribute to the project
 
 ### Specifications
 - **[../specs/001-app-skeleton-init/](../specs/001-app-skeleton-init/)** - Application skeleton specification
@@ -51,7 +51,7 @@
 3. Check **[MALWARE_SCANNING.md](./MALWARE_SCANNING.md)** for ClamAV setup
 
 ### For Contributors
-1. Read **[CONTRIBUTING.md](../CONTRIBUTING.md)**
+1. Read **[CONTRIBUTING.md](./CONTRIBUTING.md)**
 2. Follow **[VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md)**
 3. Use **[templates/](./templates/)** for new documentation
 
@@ -98,7 +98,7 @@ docs/
 
 ### Deployment & Operations
 - Production Deployment → [PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md)
-- Server Status → [../SERVERS_STATUS.md](../SERVERS_STATUS.md)
+- Server Status → [SERVERS_STATUS.md](./SERVERS_STATUS.md)
 - Monitoring → [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md#monitoring--metrics)
 
 ---
@@ -130,7 +130,7 @@ docs/
 
 Found an error? Want to improve documentation?
 
-1. Check [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines
+1. Check [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines
 2. Create an issue or PR
 3. Follow documentation standards
 4. Request review
