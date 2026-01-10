@@ -20,60 +20,30 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Add performance indexes for document queries."""
-    # Index on documents.content_hash for duplicate detection
-    op.create_index(
-        'ix_documents_content_hash',
-        'documents',
-        ['content_hash'],
-        unique=False
-    )
+    # Note: ix_documents_content_hash already exists from previous migration
+    # Only create new indexes here
     
     # Index on documents.uploaded_by for user-specific queries
-    op.create_index(
-        'ix_documents_uploaded_by',
-        'documents',
-        ['uploaded_by'],
-        unique=False
-    )
+    op.execute('CREATE INDEX IF NOT EXISTS ix_documents_uploaded_by ON documents (uploaded_by)')
     
     # Composite index on documents (tenant_id, created_at) for listing
-    op.create_index(
-        'ix_documents_tenant_created',
-        'documents',
-        ['tenant_id', 'created_at'],
-        unique=False
-    )
+    op.execute('CREATE INDEX IF NOT EXISTS ix_documents_tenant_created ON documents (tenant_id, created_at)')
     
     # Index on upload_sessions.expires_at for cleanup queries
-    op.create_index(
-        'ix_upload_sessions_expires_at',
-        'upload_sessions',
-        ['expires_at'],
-        unique=False
-    )
+    op.execute('CREATE INDEX IF NOT EXISTS ix_upload_sessions_expires_at ON upload_sessions (expires_at)')
     
     # Index on processing_jobs.status for querying pending jobs
-    op.create_index(
-        'ix_processing_jobs_status',
-        'processing_jobs',
-        ['status'],
-        unique=False
-    )
+    op.execute('CREATE INDEX IF NOT EXISTS ix_processing_jobs_status ON processing_jobs (status)')
     
     # Composite index on processing_jobs (document_id, created_at)
-    op.create_index(
-        'ix_processing_jobs_document_created',
-        'processing_jobs',
-        ['document_id', 'created_at'],
-        unique=False
-    )
+    op.execute('CREATE INDEX IF NOT EXISTS ix_processing_jobs_document_created ON processing_jobs (document_id, created_at)')
 
 
 def downgrade() -> None:
     """Remove performance indexes."""
-    op.drop_index('ix_processing_jobs_document_created', table_name='processing_jobs')
-    op.drop_index('ix_processing_jobs_status', table_name='processing_jobs')
-    op.drop_index('ix_upload_sessions_expires_at', table_name='upload_sessions')
-    op.drop_index('ix_documents_tenant_created', table_name='documents')
-    op.drop_index('ix_documents_uploaded_by', table_name='documents')
-    op.drop_index('ix_documents_content_hash', table_name='documents')
+    # Note: Don't drop ix_documents_content_hash as it was created in previous migration
+    op.execute('DROP INDEX IF EXISTS ix_processing_jobs_document_created')
+    op.execute('DROP INDEX IF EXISTS ix_processing_jobs_status')
+    op.execute('DROP INDEX IF EXISTS ix_upload_sessions_expires_at')
+    op.execute('DROP INDEX IF EXISTS ix_documents_tenant_created')
+    op.execute('DROP INDEX IF EXISTS ix_documents_uploaded_by')
