@@ -101,9 +101,18 @@ def create_app() -> FastAPI:
         prefix=f"/api/{settings.api_version}",
         tags=["health"],
     )
-    app.include_router(documents.router)
-    app.include_router(processing.router)
-    app.include_router(metrics.router)
+    app.include_router(
+        documents.router,
+        prefix=f"/api/{settings.api_version}",
+    )
+    app.include_router(
+        processing.router,
+        prefix=f"/api/{settings.api_version}",
+    )
+    app.include_router(
+        metrics.router,
+        prefix=f"/api/{settings.api_version}",
+    )
 
     logger.info(
         "fastapi_app_created",

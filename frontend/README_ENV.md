@@ -2,10 +2,8 @@
 
 Create a `.env.local` file in the `frontend/` directory with the following variables:
 
-**⚠️ IMPORTANT**: The `NEXT_PUBLIC_API_URL` **MUST** include the `/api/v1` path!
-
 ```bash
-# Backend API URL (MUST include /api/v1 path)
+# Backend API URL (includes /api/v1 prefix for all routes)
 NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 
 # Optional: Enable debug mode

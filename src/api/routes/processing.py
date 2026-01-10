@@ -14,7 +14,7 @@ from src.storage_indexing.repositories.job_repository import JobRepository
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter(prefix="/api/v1/processing", tags=["processing"])
+router = APIRouter(prefix="/processing", tags=["processing"])
 
 
 @router.get("/jobs/{job_id}", status_code=status.HTTP_200_OK)

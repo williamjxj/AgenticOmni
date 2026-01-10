@@ -41,7 +41,7 @@ from src.storage_indexing.repositories.upload_session_repository import (
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter(prefix="/api/v1/documents", tags=["documents"])
+router = APIRouter(prefix="/documents", tags=["documents"])
 
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED, response_model=UploadResponse)
