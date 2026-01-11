@@ -9,18 +9,18 @@ from dramatiq.brokers.redis import RedisBroker
 
 import structlog
 
-from config.settings import settings
+from src.shared.config import settings
 
 logger = structlog.get_logger(__name__)
 
 # Initialize Redis broker
-redis_broker = RedisBroker(url=settings.task_queue.DRAMATIQ_BROKER_URL)
+redis_broker = RedisBroker(url=settings.dramatiq_broker_url)
 dramatiq.set_broker(redis_broker)
 
 logger.info(
     "Dramatiq broker initialized",
-    broker_url=settings.task_queue.DRAMATIQ_BROKER_URL,
-    max_concurrent_jobs=settings.task_queue.MAX_CONCURRENT_PARSING_JOBS,
+    broker_url=settings.dramatiq_broker_url,
+    max_concurrent_jobs=settings.max_concurrent_parsing_jobs,
 )
 
 

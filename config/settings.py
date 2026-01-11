@@ -396,8 +396,18 @@ class Settings(BaseSettings):
     # Embedding Configuration
     embedding_provider: str = Field(
         default="openai",
-        description="Embedding provider: openai, huggingface, deepseek",
+        description="Embedding provider: openai, huggingface, deepseek, ollama",
     )
+
+    @field_validator("embedding_provider")
+    @classmethod
+    def validate_embedding_provider(cls, v: str) -> str:
+        """Validate embedding provider selection."""
+        allowed_providers = {"openai", "huggingface", "deepseek", "ollama"}
+        v_lower = v.lower()
+        if v_lower not in allowed_providers:
+            raise ValueError(f"embedding_provider must be one of {allowed_providers}, got {v}")
+        return v_lower
 
     embedding_model: str = Field(
         default="text-embedding-3-small",
@@ -409,6 +419,175 @@ class Settings(BaseSettings):
         ge=128,
         le=4096,
         description="Embedding vector dimension (must match vector_dimensions)",
+    )
+
+    ollama_base_url: str = Field(
+        default="http://localhost:11434",
+        description="Ollama API base URL",
+    )
+
+    # ========================================================================
+    # OCR Configuration (Feature 004-ocr-embedding-pipeline)
+    # ========================================================================
+    ocr_engine: str = Field(
+        default="auto",
+        description="OCR engine: auto, paddleocr, tesseract",
+    )
+
+    @field_validator("ocr_engine")
+    @classmethod
+    def validate_ocr_engine(cls, v: str) -> str:
+        """Validate OCR engine selection."""
+        allowed_engines = {"auto", "paddleocr", "tesseract"}
+        v_lower = v.lower()
+        if v_lower not in allowed_engines:
+            raise ValueError(f"ocr_engine must be one of {allowed_engines}, got {v}")
+        return v_lower
+
+    ocr_languages: str = Field(
+        default="en,zh",
+        description="Supported OCR languages (comma-separated ISO 639-1 codes)",
+    )
+
+    def get_ocr_languages_list(self) -> list[str]:
+        """Get OCR languages as a list."""
+        return [lang.strip().lower() for lang in self.ocr_languages.split(",") if lang.strip()]
+
+    ocr_confidence_threshold: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="Minimum confidence threshold for OCR text acceptance",
+    )
+
+    ocr_gpu_enabled: bool = Field(
+        default=True,
+        description="Enable GPU acceleration for OCR processing",
+    )
+
+    ocr_max_concurrent_jobs: int = Field(
+        default=4,
+        ge=1,
+        le=20,
+        description="Maximum concurrent OCR jobs",
+    )
+
+    # ========================================================================
+    # Local Embedding Configuration (Feature 004-ocr-embedding-pipeline)
+    # ========================================================================
+    local_embedding_model: str = Field(
+        default="intfloat/multilingual-e5-base",
+        description="Local embedding model from HuggingFace (sentence-transformers)",
+    )
+
+    embedding_batch_size: int = Field(
+        default=32,
+        ge=1,
+        le=128,
+        description="Batch size for embedding generation",
+    )
+
+    embedding_gpu_enabled: bool = Field(
+        default=True,
+        description="Enable GPU acceleration for embedding generation",
+    )
+
+    embedding_model_cache: str | None = Field(
+        default=None,
+        description="Custom cache directory for embedding models",
+    )
+
+    # ========================================================================
+    # Document Chunking Configuration (Feature 004-ocr-embedding-pipeline)
+    # ========================================================================
+    max_chunk_size: int = Field(
+        default=500,
+        ge=100,
+        le=1000,
+        description="Maximum chunk size in tokens",
+    )
+
+    chunk_overlap: int = Field(
+        default=50,
+        ge=0,
+        le=200,
+        description="Chunk overlap in tokens",
+    )
+
+    max_document_size_mb: int = Field(
+        default=100,
+        ge=1,
+        le=500,
+        description="Maximum document size in MB",
+    )
+
+    max_document_pages: int = Field(
+        default=500,
+        ge=1,
+        le=2000,
+        description="Maximum pages per document",
+    )
+
+    # ========================================================================
+    # Vector Search Configuration (Feature 004-ocr-embedding-pipeline)
+    # ========================================================================
+    search_default_limit: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        description="Default number of search results",
+    )
+
+    search_max_limit: int = Field(
+        default=100,
+        ge=1,
+        le=500,
+        description="Maximum number of search results",
+    )
+
+    search_min_similarity: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Minimum similarity score for search results",
+    )
+
+    hnsw_m: int = Field(
+        default=16,
+        ge=4,
+        le=64,
+        description="HNSW index M parameter (connections per layer)",
+    )
+
+    hnsw_ef_construction: int = Field(
+        default=64,
+        ge=16,
+        le=256,
+        description="HNSW index ef_construction parameter (build quality)",
+    )
+
+    # ========================================================================
+    # Background Job Configuration (Feature 004-ocr-embedding-pipeline)
+    # ========================================================================
+    max_job_retries: int = Field(
+        default=3,
+        ge=0,
+        le=10,
+        description="Maximum retry attempts for failed jobs",
+    )
+
+    default_job_priority: int = Field(
+        default=5,
+        ge=1,
+        le=10,
+        description="Default job priority (1=highest, 10=lowest)",
+    )
+
+    max_concurrent_jobs: int = Field(
+        default=4,
+        ge=1,
+        le=20,
+        description="Maximum concurrent processing jobs",
     )
 
     # RAG Configuration

@@ -63,8 +63,8 @@ class ChunkRepository:
         """
         chunk = DocumentChunk(
             document_id=document_id,
-            chunk_index=chunk_index,
-            content=content,
+            chunk_order=chunk_index,
+            content_text=content,
             chunk_type=chunk_type,
             start_page=start_page,
             end_page=end_page,
@@ -80,7 +80,7 @@ class ChunkRepository:
             "Chunk created",
             chunk_id=chunk.chunk_id,
             document_id=document_id,
-            chunk_index=chunk_index,
+            chunk_order=chunk_index,
             token_count=token_count,
         )
         
@@ -93,12 +93,12 @@ class ChunkRepository:
             document_id: Document ID
             
         Returns:
-            List of DocumentChunk instances ordered by chunk_index
+            List of DocumentChunk instances ordered by chunk_order
         """
         result = await self.db.execute(
             select(DocumentChunk)
             .where(DocumentChunk.document_id == document_id)
-            .order_by(DocumentChunk.chunk_index)
+            .order_by(DocumentChunk.chunk_order)
         )
         return list(result.scalars().all())
 

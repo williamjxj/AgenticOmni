@@ -5,6 +5,7 @@ import asyncio
 import dramatiq
 import structlog
 
+from src.ingestion_parsing.tasks.worker import redis_broker  # Ensure broker is initialized
 from src.ingestion_parsing.services.parsing_service import ParsingService
 from src.storage_indexing.database import get_db
 from src.storage_indexing.repositories.chunk_repository import ChunkRepository
@@ -60,6 +61,10 @@ async def _parse_document_async(document_id: int) -> None:
     Args:
         document_id: ID of document to parse
     """
+    # Ensure database is initialized
+    from src.storage_indexing.database import init_db
+    init_db()
+    
     # Get database session
     async for db_session in get_db():
         try:

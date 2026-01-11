@@ -8,6 +8,7 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
+from src.shared.config import settings
 from src.storage_indexing.models.base import Base
 
 
@@ -61,9 +62,9 @@ class DocumentChunk(Base):
     )
 
     embedding_vector: Mapped[Any] = mapped_column(
-        Vector(1536),  # OpenAI text-embedding-3-small dimension
+        Vector(settings.vector_dimensions),  # OpenAI text-embedding-3-small dimension
         nullable=True,
-        comment="Vector embedding (1536 dimensions)",
+        comment=f"Vector embedding ({settings.vector_dimensions} dimensions)",
     )
 
     chunk_order: Mapped[int] = mapped_column(
@@ -110,6 +111,44 @@ class DocumentChunk(Base):
         nullable=True,
         default=dict,
         comment="Chunk-specific metadata (JSONB)",
+    )
+
+    # Embedding fields (Feature 004-ocr-embedding-pipeline, Task T017)
+    chunk_sequence: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        comment="Sequence number within document (0-indexed)",
+    )
+
+    char_offset_start: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Character offset in original text",
+    )
+
+    char_offset_end: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Character offset in original text (end)",
+    )
+
+    section_heading: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        comment="Nearest section/heading for context",
+    )
+
+    embedding_model: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        comment="Model used: multilingual-e5-base, multilingual-e5-large",
+    )
+
+    embedding_generated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="When embedding was created",
     )
 
     created_at: Mapped[datetime] = mapped_column(

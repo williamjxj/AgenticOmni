@@ -1,185 +1,233 @@
-/**
- * AgenticOmni Landing Page
- * 
- * This is the main landing page for the AgenticOmni application.
- * It displays the application overview and provides navigation to key features.
- */
+'use client';
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { HealthStatus } from "@/components/health-status";
+import Link from 'next/link';
+import { FileText, Search, Upload, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      {/* Header */}
-      <header className="border-b bg-white/50 backdrop-blur-sm dark:bg-slate-950/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              AgenticOmni
-            </h1>
-            <nav className="flex gap-4">
-              <Button variant="ghost" asChild>
-                <Link href="/docs">
-                  Documentation
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="http://localhost:8000/api/v1/docs" target="_blank" rel="noopener noreferrer">
-                  API Docs
-                </Link>
-              </Button>
-            </nav>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       {/* Hero Section */}
-      <main className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-16 md:py-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            AI-Powered Document Intelligence
+          </h1>
+          <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-8">
+            Upload markdown files, get instant answers through intelligent search
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="text-lg px-8" asChild>
+              <Link href="/upload">
+                <Upload className="mr-2 h-5 w-5" />
+                Upload Documents
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+              <Link href="/search">
+                <Search className="mr-2 h-5 w-5" />
+                Search Documents
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="container mx-auto px-4 py-16 bg-white dark:bg-slate-900">
         <div className="max-w-6xl mx-auto">
-          {/* Hero Content */}
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-4">
-              AI-Powered Document Intelligence
-            </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-8">
-              Transform multi-media documents into searchable knowledge with our
-              advanced ETL-to-RAG pipeline
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link href="/upload">Get Started</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/docs">Learn More</Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Health Status */}
-          <div className="mb-16">
-            <HealthStatus />
-          </div>
-
-          {/* Features */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
-            <Card>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Simple 3-Step Process
+          </h2>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Step 1 */}
+            <Card className="border-2">
               <CardHeader>
-                <CardTitle>📄 Multi-Format Upload</CardTitle>
+                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-4">
+                  <Upload className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-blue-600">1</span>
+                  Upload Markdown
+                </CardTitle>
                 <CardDescription>
-                  Single, batch, and resumable uploads up to 5GB
+                  Upload your markdown files (single file or entire folders)
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Upload PDF, DOCX, and TXT files. Support for single files (50MB),
-                  batch uploads (1-10 files), and resumable uploads for large files up to 5GB.
-                </p>
+                <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Drag & drop support
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Batch folder upload
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    English & Chinese support
+                  </li>
+                </ul>
               </CardContent>
             </Card>
 
-            <Card>
+            {/* Step 2 */}
+            <Card className="border-2">
               <CardHeader>
-                <CardTitle>🤖 DeepSeek LLM Integration</CardTitle>
+                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-4">
+                  <Zap className="h-6 w-6 text-purple-600 dark:text-purple-300" />
+                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-purple-600">2</span>
+                  AI Processing
+                </CardTitle>
                 <CardDescription>
-                  Cost-effective RAG with 32K context window
+                  Automatic parsing and embedding generation
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  RAG-optimized document chunking with DeepSeek LLM integration.
-                  Smart semantic chunking (512 tokens) with embedding support for semantic search.
-                </p>
+                <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Extract structure & metadata
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Generate semantic embeddings
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Index for fast search
+                  </li>
+                </ul>
               </CardContent>
             </Card>
 
-            <Card>
+            {/* Step 3 */}
+            <Card className="border-2">
               <CardHeader>
-                <CardTitle>⚡ Enterprise Performance</CardTitle>
+                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-4">
+                  <Search className="h-6 w-6 text-green-600 dark:text-green-300" />
+                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-green-600">3</span>
+                  Search & Query
+                </CardTitle>
                 <CardDescription>
-                  Async processing with real-time progress tracking
+                  Ask questions and get instant answers
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Multi-tenant architecture with async processing, storage quotas,
-                  byte-level progress tracking, and Prometheus-compatible metrics.
-                </p>
+                <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Semantic search
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Natural language queries
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Ranked results
+                  </li>
+                </ul>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Tech Stack */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Technology Stack</CardTitle>
-              <CardDescription>
-                Built with modern, production-ready technologies
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <h4 className="font-semibold mb-2">Backend</h4>
-                  <ul className="space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>Python 3.12+</li>
-                    <li>FastAPI</li>
-                    <li>SQLAlchemy</li>
-                    <li>PostgreSQL</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">AI/ML</h4>
-                  <ul className="space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>DeepSeek LLM</li>
-                    <li>Docling (IBM)</li>
-                    <li>OpenAI Embeddings</li>
-                    <li>Tiktoken</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Frontend</h4>
-                  <ul className="space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>Next.js 16</li>
-                    <li>React 19</li>
-                    <li>TypeScript</li>
-                    <li>Tailwind CSS</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Infrastructure</h4>
-                  <ul className="space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>Docker</li>
-                    <li>Redis</li>
-                    <li>Dramatiq</li>
-                    <li>pgvector</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t bg-white/50 backdrop-blur-sm dark:bg-slate-950/50 mt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-sm text-slate-600 dark:text-slate-400">
-            <p>AgenticOmni v0.2.0 - AI-Powered Document Intelligence Platform</p>
-            <p className="mt-2">
-              Built with ❤️ by Best IT Consultants
-            </p>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Features */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Powerful Features
+          </h2>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <FileText className="h-8 w-8 mb-2 text-blue-600" />
+                <CardTitle>Markdown-First</CardTitle>
+                <CardDescription>
+                  Optimized for markdown documentation, notes, and knowledge bases
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-slate-600 dark:text-slate-400">
+                Preserves markdown structure including headings, code blocks, links, and tables
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Zap className="h-8 w-8 mb-2 text-purple-600" />
+                <CardTitle>Intelligent Embeddings</CardTitle>
+                <CardDescription>
+                  Multilingual semantic understanding (English & Chinese)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-slate-600 dark:text-slate-400">
+                Powered by advanced AI models for accurate semantic search
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Search className="h-8 w-8 mb-2 text-green-600" />
+                <CardTitle>Fast Search</CardTitle>
+                <CardDescription>
+                  Vector-based similarity search with sub-second response times
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-slate-600 dark:text-slate-400">
+                Find relevant content even when exact keywords don't match
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CheckCircle2 className="h-8 w-8 mb-2 text-orange-600" />
+                <CardTitle>Batch Processing</CardTitle>
+                <CardDescription>
+                  Upload entire folders of markdown files at once
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-slate-600 dark:text-slate-400">
+                Process hundreds of documents in a single operation
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="container mx-auto px-4 py-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl my-16">
+        <div className="max-w-3xl mx-auto text-center text-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Get Started?
+          </h2>
+          <p className="text-xl mb-8 text-blue-100">
+            Upload your markdown files and start searching in seconds
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="secondary" className="text-lg px-8" asChild>
+              <Link href="/upload">
+                Start Uploading
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="text-lg px-8 bg-white/10 border-white/20 text-white hover:bg-white/20" asChild>
+              <Link href="/documents">
+                View My Documents
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

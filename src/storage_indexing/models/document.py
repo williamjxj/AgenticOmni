@@ -3,7 +3,8 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import JSON, BigInteger, ForeignKey, Integer, String
+import sqlalchemy as sa
+from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.storage_indexing.models.base import Base, TenantScopedMixin, TimestampMixin
@@ -20,6 +21,24 @@ class ProcessingStatus(str, Enum):
     UPLOADED = "uploaded"
     PARSING = "parsing"
     PARSED = "parsed"
+    FAILED = "failed"
+
+
+class OcrStatus(str, Enum):
+    """OCR processing status enumeration."""
+
+    NOT_STARTED = "not_started"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class EmbeddingStatus(str, Enum):
+    """Embedding generation status enumeration."""
+
+    NOT_STARTED = "not_started"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
     FAILED = "failed"
 
 
@@ -111,10 +130,10 @@ class Document(Base, TenantScopedMixin, TimestampMixin):
         comment="Number of pages (for PDF/DOCX)",
     )
 
-    uploaded_by: Mapped[int] = mapped_column(
+    uploaded_by: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("users.user_id", ondelete="SET NULL"),
-        nullable=False,
+        nullable=True,
         index=True,
         comment="User who uploaded the document",
     )
@@ -145,6 +164,48 @@ class Document(Base, TenantScopedMixin, TimestampMixin):
         nullable=True,
         index=True,
         comment="Foreign key to folder_batches for batch uploads",
+    )
+
+    # OCR and Embedding fields (Feature 004-ocr-embedding-pipeline)
+    ocr_status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default=OcrStatus.NOT_STARTED.value,
+        index=True,
+        comment="OCR processing status: not_started, in_progress, completed, failed",
+    )
+
+    ocr_confidence: Mapped[float | None] = mapped_column(
+        Float(),
+        nullable=True,
+        comment="Average OCR confidence score (0.0-1.0)",
+    )
+
+    embedding_status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default=EmbeddingStatus.NOT_STARTED.value,
+        index=True,
+        comment="Embedding generation status: not_started, in_progress, completed, failed",
+    )
+
+    language_detected: Mapped[str | None] = mapped_column(
+        String(10),
+        nullable=True,
+        comment="Detected language (ISO 639-1 code: en, zh, etc.)",
+    )
+
+    has_scanned_content: Mapped[bool] = mapped_column(
+        Boolean(),
+        nullable=False,
+        default=False,
+        comment="True if document contains image-based content requiring OCR",
+    )
+
+    ocr_engine_used: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+        comment="OCR engine used: paddleocr, tesseract, none",
     )
 
     # Relationships for markdown ingestion

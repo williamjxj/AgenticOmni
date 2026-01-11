@@ -1,5 +1,4 @@
 accelerate==1.12.0
--e git+https://github.com/williamjxj/AgenticOmni.git@3c3969ff3fd11e5c9cdc2fecd3828edda7e8887a#egg=agenticomni
 aiofiles==25.1.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.3

@@ -19,10 +19,20 @@ from src.storage_indexing.models.user import User
 from src.storage_indexing.models.folder_batch import FolderBatch
 
 # Document and its related models
-from src.storage_indexing.models.document import Document, ProcessingStatus
+from src.storage_indexing.models.document import (
+    Document,
+    EmbeddingStatus,
+    OcrStatus,
+    ProcessingStatus,
+)
 from src.storage_indexing.models.markdown_metadata import MarkdownMetadata
 from src.storage_indexing.models.image_reference import ImageReference
 from src.storage_indexing.models.document_chunk import ChunkType, DocumentChunk
+
+# OCR and embedding models (Feature 004-ocr-embedding-pipeline)
+from src.storage_indexing.models.extracted_text import ExtractedText, ExtractionMethod
+from src.storage_indexing.models.search_query import QueryType, SearchQuery
+from src.storage_indexing.models.search_result import SearchResult
 
 # Processing job last
 from src.storage_indexing.models.processing_job import JobStatus, JobType, ProcessingJob
@@ -32,14 +42,21 @@ __all__ = [
     "ChunkType",
     "Document",
     "DocumentChunk",
+    "EmbeddingStatus",
+    "ExtractedText",
+    "ExtractionMethod",
     "FolderBatch",
     "ImageReference",
     "JobStatus",
     "JobType",
     "MarkdownMetadata",
+    "OcrStatus",
     "Permission",
     "ProcessingJob",
     "ProcessingStatus",
+    "QueryType",
+    "SearchQuery",
+    "SearchResult",
     "Tenant",
     "TenantScopedMixin",
     "UploadSession",

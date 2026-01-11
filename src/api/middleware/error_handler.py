@@ -159,11 +159,17 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
                 error=str(exc),
             )
             
-        elif isinstance(exc, (DatabaseError, ConfigurationError, ExternalServiceError, DocumentProcessingError)):
+        elif isinstance(exc, (DatabaseError, ConfigurationError, DocumentProcessingError)):
             status_code = 500
             error_type = "internal_error"
             error_message = "An internal server error occurred"
             # Don't expose internal error details to client
+            
+        elif isinstance(exc, ExternalServiceError):
+            status_code = 502
+            error_type = "external_service_error"
+            error_message = str(exc)
+            error_details = getattr(exc, "details", {})
             
         elif isinstance(exc, AgenticOmniException):
             # Generic application exception

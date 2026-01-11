@@ -1,0 +1,563 @@
+openapi: 3.1.0
+info:
+  title: Vector Similarity Search API
+  description: |
+    API endpoints for semantic document search using vector embeddings.
+    Supports natural language queries and similar document discovery.
+  version: 1.0.0
+  contact:
+    name: AgenticOmni API Support
+    email: api-support@agenticomni.example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.agenticomni.example.com/api/v1
+    description: Production
+
+tags:
+  - name: Search
+    description: Semantic search operations
+  - name: Similarity
+    description: Document similarity operations
+
+paths:
+  /search:
+    post:
+      tags: [Search]
+      summary: Semantic search across documents
+      description: |
+        Performs semantic search using natural language queries. Returns documents
+        ranked by similarity to the query.
+        
+        Uses vector similarity (cosine distance) with optional metadata filtering.
+      operationId: semanticSearch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Natural language search query
+                  example: "What are the payment terms in the contract?"
+                  minLength: 1
+                  maxLength: 1000
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 10
+                  description: Maximum number of results to return
+                min_score:
+                  type: number
+                  format: float
+                  minimum: 0.0
+                  maximum: 1.0
+                  default: 0.0
+                  description: Minimum similarity score threshold
+                filters:
+                  type: object
+                  description: Metadata filters to apply
+                  properties:
+                    document_ids:
+                      type: array
+                      items:
+                        type: integer
+                      description: Limit search to specific documents
+                    folder_id:
+                      type: integer
+                      description: Limit search to specific folder
+                    file_types:
+                      type: array
+                      items:
+                        type: string
+                      example: ["application/pdf"]
+                      description: Filter by file MIME types
+                    date_from:
+                      type: string
+                      format: date-time
+                      description: Documents created/uploaded after this date
+                    date_to:
+                      type: string
+                      format: date-time
+                      description: Documents created/uploaded before this date
+                    languages:
+                      type: array
+                      items:
+                        type: string
+                      example: ["en", "zh"]
+                      description: Filter by detected language
+                include_snippets:
+                  type: boolean
+                  default: true
+                  description: Include text snippets in results
+                snippet_length:
+                  type: integer
+                  minimum: 50
+                  maximum: 500
+                  default: 200
+                  description: Maximum characters in snippet
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Search service temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /documents/{document_id}/similar:
+    get:
+      tags: [Similarity]
+      summary: Find similar documents
+      description: |
+        Finds documents similar to a given document using vector similarity.
+        Useful for discovering related content without crafting a search query.
+      operationId: findSimilarDocuments
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Source document ID to find similar documents for
+          schema:
+            type: integer
+            example: 42
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of similar documents to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: min_score
+          in: query
+          required: false
+          description: Minimum similarity score threshold
+          schema:
+            type: number
+            format: float
+            minimum: 0.0
+            maximum: 1.0
+            default: 0.3
+        - name: include_snippets
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Similar documents found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimilarDocumentsResponse'
+        '404':
+          description: Document not found or has no embeddings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Search service temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /documents/{document_id}/chunks/{chunk_id}/similar:
+    get:
+      tags: [Similarity]
+      summary: Find similar chunks
+      description: |
+        Finds document chunks similar to a specific chunk. Useful for
+        fine-grained similarity search within documents.
+      operationId: findSimilarChunks
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: integer
+            example: 42
+        - name: chunk_id
+          in: path
+          required: true
+          description: Source chunk ID
+          schema:
+            type: integer
+            example: 9876
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: min_score
+          in: query
+          required: false
+          schema:
+            type: number
+            format: float
+            minimum: 0.0
+            maximum: 1.0
+            default: 0.3
+      responses:
+        '200':
+          description: Similar chunks found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimilarChunksResponse'
+        '404':
+          description: Chunk not found or has no embedding
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /search/history:
+    get:
+      tags: [Search]
+      summary: Get search query history
+      description: |
+        Retrieves search query history for the current user/tenant.
+        Useful for analytics and trending queries.
+      operationId: getSearchHistory
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: date_from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: date_to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Search history retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHistoryResponse'
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SearchResponse:
+      type: object
+      required:
+        - query
+        - total_results
+        - results
+        - search_duration_ms
+      properties:
+        query:
+          type: string
+          description: Original search query
+          example: "What are the payment terms?"
+        total_results:
+          type: integer
+          description: Total number of matching results
+          example: 42
+        returned_results:
+          type: integer
+          description: Number of results in this response
+          example: 10
+        search_duration_ms:
+          type: integer
+          description: Search execution time in milliseconds
+          example: 145
+        min_score_applied:
+          type: number
+          format: float
+          description: Minimum score threshold applied
+        filters_applied:
+          type: object
+          nullable: true
+          description: Filters that were applied
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+
+    SearchResult:
+      type: object
+      required:
+        - document_id
+        - filename
+        - similarity_score
+        - rank
+      properties:
+        document_id:
+          type: integer
+          example: 42
+        filename:
+          type: string
+          example: "contract.pdf"
+        file_type:
+          type: string
+          example: "application/pdf"
+        similarity_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.87
+          description: Cosine similarity score (higher is better)
+        rank:
+          type: integer
+          minimum: 1
+          description: Result position (1-based)
+          example: 1
+        chunk_id:
+          type: integer
+          description: Matching chunk ID
+          example: 9876
+        chunk_sequence:
+          type: integer
+          description: Chunk position in document
+        page_number:
+          type: integer
+          nullable: true
+          description: Page where match was found
+        section_heading:
+          type: string
+          nullable: true
+          description: Section heading for context
+        snippet:
+          type: string
+          nullable: true
+          description: Text snippet with match highlighted
+          example: "Payment terms are Net 30 days from invoice date..."
+        document_metadata:
+          type: object
+          properties:
+            created_at:
+              type: string
+              format: date-time
+            language:
+              type: string
+            page_count:
+              type: integer
+            folder:
+              type: string
+              nullable: true
+
+    SimilarDocumentsResponse:
+      type: object
+      required:
+        - source_document_id
+        - total_similar
+        - similar_documents
+      properties:
+        source_document_id:
+          type: integer
+          example: 42
+        source_filename:
+          type: string
+          example: "contract.pdf"
+        total_similar:
+          type: integer
+          example: 15
+        returned_results:
+          type: integer
+          example: 10
+        similar_documents:
+          type: array
+          items:
+            type: object
+            required:
+              - document_id
+              - filename
+              - similarity_score
+            properties:
+              document_id:
+                type: integer
+              filename:
+                type: string
+              file_type:
+                type: string
+              similarity_score:
+                type: number
+                format: float
+                minimum: 0.0
+                maximum: 1.0
+              similarity_reason:
+                type: string
+                description: Brief explanation of similarity
+                example: "Shares common topics: payments, contract terms"
+              snippet:
+                type: string
+                nullable: true
+                description: Representative text snippet
+              document_metadata:
+                type: object
+
+    SimilarChunksResponse:
+      type: object
+      required:
+        - source_chunk_id
+        - total_similar
+        - similar_chunks
+      properties:
+        source_chunk_id:
+          type: integer
+          example: 9876
+        source_document_id:
+          type: integer
+          example: 42
+        total_similar:
+          type: integer
+        returned_results:
+          type: integer
+        similar_chunks:
+          type: array
+          items:
+            type: object
+            required:
+              - chunk_id
+              - document_id
+              - similarity_score
+            properties:
+              chunk_id:
+                type: integer
+              document_id:
+                type: integer
+              filename:
+                type: string
+              chunk_sequence:
+                type: integer
+              similarity_score:
+                type: number
+                format: float
+                minimum: 0.0
+                maximum: 1.0
+              chunk_text:
+                type: string
+                description: Full chunk text
+              page_number:
+                type: integer
+                nullable: true
+              section_heading:
+                type: string
+                nullable: true
+
+    SearchHistoryResponse:
+      type: object
+      required:
+        - total_queries
+        - page
+        - page_size
+        - queries
+      properties:
+        total_queries:
+          type: integer
+          example: 234
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 20
+        total_pages:
+          type: integer
+          example: 12
+        queries:
+          type: array
+          items:
+            type: object
+            required:
+              - query_id
+              - query_text
+              - created_at
+            properties:
+              query_id:
+                type: integer
+              query_text:
+                type: string
+              query_type:
+                type: string
+                enum: [semantic_search, similar_documents]
+              result_count:
+                type: integer
+              search_duration_ms:
+                type: integer
+              created_at:
+                type: string
+                format: date-time
+              filters_applied:
+                type: object
+                nullable: true
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "DOCUMENT_NOT_FOUND"
+        message:
+          type: string
+          example: "Document with ID 42 not found or has no embeddings"
+        details:
+          type: object
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time

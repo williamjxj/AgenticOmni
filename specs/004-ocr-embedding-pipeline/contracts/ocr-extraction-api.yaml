@@ -1,0 +1,498 @@
+openapi: 3.1.0
+info:
+  title: OCR Extraction API
+  description: |
+    API endpoints for OCR-based text extraction from uploaded documents.
+    Handles both native text extraction and OCR processing for scanned/image content.
+  version: 1.0.0
+  contact:
+    name: AgenticOmni API Support
+    email: api-support@agenticomni.example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.agenticomni.example.com/api/v1
+    description: Production
+
+tags:
+  - name: OCR
+    description: Text extraction and OCR operations
+  - name: Status
+    description: Processing status and progress tracking
+
+paths:
+  /documents/{document_id}/ocr:
+    post:
+      tags: [OCR]
+      summary: Trigger OCR processing for a document
+      description: |
+        Initiates OCR text extraction for a document. If the document contains
+        scanned images or image-based content, this endpoint will queue an OCR
+        processing job using PaddleOCR or Tesseract.
+        
+        Returns immediately with a job ID for status tracking.
+      operationId: triggerOcrExtraction
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Unique document identifier
+          schema:
+            type: integer
+            example: 42
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                engine:
+                  type: string
+                  enum: [paddleocr, tesseract, auto]
+                  default: auto
+                  description: OCR engine to use (auto selects best based on content)
+                languages:
+                  type: array
+                  items:
+                    type: string
+                  example: ["en", "zh"]
+                  description: Expected languages in document
+                confidence_threshold:
+                  type: number
+                  format: float
+                  minimum: 0.0
+                  maximum: 1.0
+                  default: 0.7
+                  description: Minimum confidence score for text acceptance
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 5
+                  description: Job priority (1=highest, 10=lowest)
+      responses:
+        '202':
+          description: OCR job accepted and queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OcrJobResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: OCR already in progress or completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /documents/{document_id}/ocr/status:
+    get:
+      tags: [Status]
+      summary: Get OCR processing status
+      description: |
+        Retrieves the current status of OCR processing for a document.
+        Includes progress percentage, extracted text preview, and error details if failed.
+      operationId: getOcrStatus
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Unique document identifier
+          schema:
+            type: integer
+            example: 42
+      responses:
+        '200':
+          description: OCR status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OcrStatusResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /documents/{document_id}/extracted-text:
+    get:
+      tags: [OCR]
+      summary: Get extracted text from document
+      description: |
+        Retrieves all extracted text from a document, organized by page.
+        Includes both native text and OCR-extracted text with source indicators.
+      operationId: getExtractedText
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Unique document identifier
+          schema:
+            type: integer
+            example: 42
+        - name: page_number
+          in: query
+          required: false
+          description: Filter by specific page number (1-indexed)
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+        - name: include_metadata
+          in: query
+          required: false
+          description: Include structural metadata (headings, paragraphs)
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Extracted text retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractedTextResponse'
+        '404':
+          description: Document not found or no extracted text available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /documents/batch/ocr:
+    post:
+      tags: [OCR]
+      summary: Trigger OCR for multiple documents
+      description: |
+        Initiates OCR processing for a batch of documents. Useful for processing
+        multiple uploaded files at once.
+        
+        Returns immediately with a batch job ID for tracking overall progress.
+      operationId: triggerBatchOcr
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - document_ids
+              properties:
+                document_ids:
+                  type: array
+                  items:
+                    type: integer
+                  minItems: 1
+                  maxItems: 100
+                  example: [42, 43, 44]
+                  description: List of document IDs to process
+                engine:
+                  type: string
+                  enum: [paddleocr, tesseract, auto]
+                  default: auto
+                languages:
+                  type: array
+                  items:
+                    type: string
+                  example: ["en", "zh"]
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 5
+      responses:
+        '202':
+          description: Batch OCR job accepted and queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchOcrJobResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    OcrJobResponse:
+      type: object
+      required:
+        - job_id
+        - document_id
+        - status
+        - created_at
+      properties:
+        job_id:
+          type: integer
+          description: Unique job identifier
+          example: 1234
+        document_id:
+          type: integer
+          description: Document being processed
+          example: 42
+        status:
+          type: string
+          enum: [pending, in_progress, completed, failed]
+          description: Current job status
+        engine:
+          type: string
+          enum: [paddleocr, tesseract]
+          description: OCR engine selected
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+          description: Job priority
+        created_at:
+          type: string
+          format: date-time
+          description: When job was created
+        estimated_completion:
+          type: string
+          format: date-time
+          description: Estimated completion time
+          nullable: true
+
+    OcrStatusResponse:
+      type: object
+      required:
+        - document_id
+        - ocr_status
+        - has_scanned_content
+      properties:
+        document_id:
+          type: integer
+          example: 42
+        ocr_status:
+          type: string
+          enum: [not_started, in_progress, completed, failed]
+          description: OCR processing status
+        has_scanned_content:
+          type: boolean
+          description: Whether document contains scanned/image content
+        ocr_engine_used:
+          type: string
+          enum: [paddleocr, tesseract, none]
+          nullable: true
+        ocr_confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          nullable: true
+          description: Average OCR confidence score
+        language_detected:
+          type: string
+          nullable: true
+          example: "en"
+          description: Detected document language
+        page_count:
+          type: integer
+          nullable: true
+          description: Total pages in document
+        progress_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+          nullable: true
+          description: Processing progress (0-100%)
+        error_message:
+          type: string
+          nullable: true
+          description: Error details if status is failed
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    ExtractedTextResponse:
+      type: object
+      required:
+        - document_id
+        - total_pages
+        - pages
+      properties:
+        document_id:
+          type: integer
+          example: 42
+        filename:
+          type: string
+          example: "contract.pdf"
+        total_pages:
+          type: integer
+          example: 20
+        total_characters:
+          type: integer
+          example: 45000
+        language_detected:
+          type: string
+          example: "en"
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtractedPage'
+
+    ExtractedPage:
+      type: object
+      required:
+        - page_number
+        - text_content
+        - extraction_method
+      properties:
+        page_number:
+          type: integer
+          minimum: 1
+          example: 1
+        text_content:
+          type: string
+          description: Full text content of the page
+        extraction_method:
+          type: string
+          enum: [native, ocr_paddleocr, ocr_tesseract]
+          description: How text was extracted
+        confidence_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          nullable: true
+          description: OCR confidence (null for native extraction)
+        character_count:
+          type: integer
+          example: 2250
+        structural_metadata:
+          type: object
+          nullable: true
+          description: Document structure information
+          properties:
+            headings:
+              type: array
+              items:
+                type: object
+                properties:
+                  text:
+                    type: string
+                  level:
+                    type: integer
+            paragraphs:
+              type: integer
+              description: Number of paragraphs detected
+            tables:
+              type: integer
+              description: Number of tables detected
+            lists:
+              type: integer
+              description: Number of lists detected
+        bounding_boxes:
+          type: array
+          nullable: true
+          description: OCR text region coordinates
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              x:
+                type: number
+              y:
+                type: number
+              width:
+                type: number
+              height:
+                type: number
+              confidence:
+                type: number
+
+    BatchOcrJobResponse:
+      type: object
+      required:
+        - batch_job_id
+        - document_count
+        - status
+        - created_at
+      properties:
+        batch_job_id:
+          type: integer
+          description: Unique batch job identifier
+          example: 5678
+        document_count:
+          type: integer
+          description: Number of documents in batch
+          example: 25
+        status:
+          type: string
+          enum: [pending, in_progress, completed, failed]
+        individual_jobs:
+          type: array
+          items:
+            type: object
+            properties:
+              document_id:
+                type: integer
+              job_id:
+                type: integer
+              status:
+                type: string
+        created_at:
+          type: string
+          format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "DOCUMENT_NOT_FOUND"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Document with ID 42 not found"
+        details:
+          type: object
+          nullable: true
+          description: Additional error context
+        timestamp:
+          type: string
+          format: date-time

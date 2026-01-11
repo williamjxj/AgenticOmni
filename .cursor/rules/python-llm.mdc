@@ -109,3 +109,4 @@ alwaysApply: true
 - **Always consider the security implications of your code, especially when dealing with user inputs and external data.**
 - **Actively use and promote best practices for the specific tasks at hand (LLM app development, data cleaning, demo creation, etc.).**
 - The environment variables are in app-root **.env** file, use them if need.
+- This app use dockerize **postgresql**, **pgvector**, **redis** (docker-compose.yml)

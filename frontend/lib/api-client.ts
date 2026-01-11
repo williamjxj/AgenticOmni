@@ -105,6 +105,44 @@ async function apiRequest<T>(
  * }
  * ```
  */
+export interface SemanticSearchRequest {
+  query_text: string;
+  tenant_id: number;
+  top_k?: number;
+}
+
+export interface SemanticSearchResponse {
+  query_id: number;
+  results: SearchResult[];
+  search_duration_ms: number;
+}
+
+export interface SearchResult {
+  chunk_id: number;
+  document_id: number;
+  similarity_score: number;
+  rank_position: number;
+  text_snippet: string;
+  document_title?: string;
+  page_number?: number;
+}
+
+/**
+ * Perform semantic search.
+ */
+export async function semanticSearch(request: SemanticSearchRequest): Promise<SemanticSearchResponse> {
+  return apiRequest<SemanticSearchResponse>("/search/semantic", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+/**
+ * Check the health status of the backend API.
+ *
+ * @returns Health check response
+ * @throws {APIError} If the health check fails
+ */
 export async function healthCheck(): Promise<HealthResponse> {
   return apiRequest<HealthResponse>("/health");
 }
@@ -115,6 +153,9 @@ export async function healthCheck(): Promise<HealthResponse> {
 export const api = {
   health: {
     check: healthCheck,
+  },
+  search: {
+    semantic: semanticSearch,
   },
   // Add more API endpoints here as they are implemented
 };

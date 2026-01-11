@@ -26,10 +26,10 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12+ (backend), TypeScript 5.x (frontend), Node.js 18+: Follow standard conventions
 
 ## Recent Changes
+- 004-ocr-embedding-pipeline: Added Python 3.12+
 - 003-markdown-ingestion: Added Python 3.12+ + FastAPI 0.128+, SQLAlchemy 2.0+ (async), Dramatiq 2.0, structlog 25.5+
 - 002-doc-upload-parsing: Added Python 3.12+ + FastAPI 0.109+, Docling (IBM), python-magic (file type detection), python-multipart (file uploads), aiofiles (async I/O), Celery/Dramatiq (task queue), boto3 (S3 storage)
 
-- 001-app-skeleton-init: Added Python 3.12+ (backend), TypeScript 5.x (frontend), Node.js 18+ + FastAPI, SQLAlchemy, Alembic, LangChain, LlamaIndex, psycopg2-binary, pgvector, Next.js, Tailwind CSS, shadcn/ui
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

@@ -255,7 +255,7 @@ class UploadService:
             # Create document record
             document = await self.document_repo.create(
                 tenant_id=tenant_id,
-                uploaded_by=user_id or 0,
+                uploaded_by=user_id,
                 filename=stored_filename,
                 original_filename=filename,
                 file_type=file_extension.lstrip("."),
@@ -287,6 +287,10 @@ class UploadService:
                 tenant_id=tenant_id,
                 user_id=user_id,
             )
+            
+            # Trigger async parsing
+            from src.ingestion_parsing.tasks.document_tasks import trigger_document_parsing
+            trigger_document_parsing(document.document_id)
             
             return document, job
             

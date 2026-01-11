@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import structlog
 
-from src.storage_indexing.models import ProcessingJob, JobStatus
+from src.storage_indexing.models import JobStatus, ProcessingJob, ProcessingStatus
 
 logger = structlog.get_logger(__name__)
 
@@ -127,9 +127,9 @@ class JobRepository:
             job.error_message = error_message
         
         # Update timestamps based on status
-        if status == ProcessingStatus.PROCESSING.value and not job.started_at:
+        if status == JobStatus.PROCESSING.value and not job.started_at:
             job.started_at = datetime.now(UTC)
-        elif status in [ProcessingStatus.COMPLETED.value, ProcessingStatus.FAILED.value]:
+        elif status in [JobStatus.COMPLETED.value, JobStatus.FAILED.value]:
             job.completed_at = datetime.now(UTC)
         
         await self.db.commit()
@@ -171,7 +171,7 @@ class JobRepository:
         """
         result = await self.db.execute(
             select(ProcessingJob)
-            .where(ProcessingJob.status == ProcessingStatus.PENDING.value)
+            .where(ProcessingJob.status == JobStatus.PENDING.value)
             .order_by(ProcessingJob.created_at)
             .limit(limit)
         )

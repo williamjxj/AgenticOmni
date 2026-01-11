@@ -45,7 +45,6 @@ class DocumentRepository:
         self,
         *,
         tenant_id: int,
-        uploaded_by: int,
         filename: str,
         original_filename: str,
         file_type: str,
@@ -53,6 +52,7 @@ class DocumentRepository:
         file_size: int,
         storage_path: str,
         content_hash: str,
+        uploaded_by: int | None = None,
         language: str | None = None,
         page_count: int | None = None,
         metadata: dict[str, Any] | None = None,
@@ -116,12 +116,17 @@ class DocumentRepository:
         Returns:
             Document instance or None if not found
         """
-        result = await self.db.execute(
-            select(Document).where(
-                Document.document_id == document_id,
-                Document.tenant_id == tenant_id,
+        if tenant_id == 0:
+            result = await self.db.execute(
+                select(Document).where(Document.document_id == document_id)
             )
-        )
+        else:
+            result = await self.db.execute(
+                select(Document).where(
+                    Document.document_id == document_id,
+                    Document.tenant_id == tenant_id,
+                )
+            )
         return result.scalar_one_or_none()
 
     async def update_status(

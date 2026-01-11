@@ -25,7 +25,7 @@ npm install
 Create a `.env.local` file (see `README_ENV.md` for details):
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ### 3. Start Backend

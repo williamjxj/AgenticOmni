@@ -9,6 +9,7 @@ from pathlib import Path
 import dramatiq
 import structlog
 
+from src.ingestion_parsing.tasks.worker import redis_broker  # Ensure broker is initialized
 from src.ingestion_parsing.services.folder_service import FolderService
 from src.ingestion_parsing.tasks.document_tasks import parse_document_task
 from src.storage_indexing.database import get_db
@@ -61,6 +62,10 @@ async def _process_folder_batch_async(batch_id: int, tenant_id: int) -> None:
         batch_id: FolderBatch identifier
         tenant_id: Tenant identifier
     """
+    # Ensure database is initialized
+    from src.storage_indexing.database import init_db
+    init_db()
+    
     async for db_session in get_db():
         try:
             # Initialize repositories
@@ -118,7 +123,7 @@ async def _process_folder_batch_async(batch_id: int, tenant_id: int) -> None:
                     # Create Document record
                     document = Document(
                         tenant_id=tenant_id,
-                        user_id=batch.user_id,
+                        uploaded_by=batch.user_id,
                         filename=file_path.name,
                         original_filename=str(relative_path),
                         file_size=file_path.stat().st_size,
@@ -222,6 +227,10 @@ async def _update_folder_batch_progress_async(
         processed: Files processed successfully
         failed: Files that failed processing
     """
+    # Ensure database is initialized
+    from src.storage_indexing.database import init_db
+    init_db()
+    
     async for db_session in get_db():
         try:
             batch_repo = FolderBatchRepository(db_session)

@@ -1,0 +1,536 @@
+openapi: 3.1.0
+info:
+  title: Embedding Generation API
+  description: |
+    API endpoints for generating and managing text embeddings for semantic search.
+    Handles chunking, embedding generation, and vector indexing.
+  version: 1.0.0
+  contact:
+    name: AgenticOmni API Support
+    email: api-support@agenticomni.example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.agenticomni.example.com/api/v1
+    description: Production
+
+tags:
+  - name: Embeddings
+    description: Embedding generation and management
+  - name: Chunks
+    description: Document chunking operations
+
+paths:
+  /documents/{document_id}/embeddings:
+    post:
+      tags: [Embeddings]
+      summary: Generate embeddings for a document
+      description: |
+        Initiates embedding generation for a document. The document must have
+        extracted text available (either from native parsing or OCR).
+        
+        Process: Document → Chunks (500 tokens) → Embeddings → Vector Index
+        
+        Returns immediately with a job ID for status tracking.
+      operationId: generateEmbeddings
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Unique document identifier
+          schema:
+            type: integer
+            example: 42
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  enum: [multilingual-e5-base, multilingual-e5-large]
+                  default: multilingual-e5-base
+                  description: Embedding model to use
+                chunk_size:
+                  type: integer
+                  minimum: 100
+                  maximum: 500
+                  default: 500
+                  description: Maximum tokens per chunk
+                chunk_overlap:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                  default: 50
+                  description: Token overlap between chunks
+                regenerate:
+                  type: boolean
+                  default: false
+                  description: Regenerate embeddings if already exist
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 5
+      responses:
+        '202':
+          description: Embedding generation job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingJobResponse'
+        '400':
+          description: Invalid request or document has no extracted text
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Embeddings already exist (use regenerate=true to force)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+    get:
+      tags: [Embeddings]
+      summary: Get embedding status and metadata
+      description: |
+        Retrieves embedding generation status and metadata for a document.
+        Includes chunk count, model used, and generation timestamp.
+      operationId: getEmbeddingStatus
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Unique document identifier
+          schema:
+            type: integer
+            example: 42
+      responses:
+        '200':
+          description: Embedding status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingStatusResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /documents/{document_id}/chunks:
+    get:
+      tags: [Chunks]
+      summary: Get document chunks
+      description: |
+        Retrieves all chunks for a document with optional embedding vectors.
+        Useful for debugging and understanding how documents are segmented.
+      operationId: getDocumentChunks
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Unique document identifier
+          schema:
+            type: integer
+            example: 42
+        - name: include_embeddings
+          in: query
+          required: false
+          description: Include embedding vectors in response (large payload)
+          schema:
+            type: boolean
+            default: false
+        - name: page
+          in: query
+          required: false
+          description: Page number for pagination (1-indexed)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          required: false
+          description: Number of chunks per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Chunks retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunksResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /documents/batch/embeddings:
+    post:
+      tags: [Embeddings]
+      summary: Generate embeddings for multiple documents
+      description: |
+        Initiates embedding generation for a batch of documents. All documents
+        must have extracted text available.
+        
+        Processes documents in parallel for efficiency.
+      operationId: generateBatchEmbeddings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - document_ids
+              properties:
+                document_ids:
+                  type: array
+                  items:
+                    type: integer
+                  minItems: 1
+                  maxItems: 100
+                  example: [42, 43, 44]
+                model:
+                  type: string
+                  enum: [multilingual-e5-base, multilingual-e5-large]
+                  default: multilingual-e5-base
+                chunk_size:
+                  type: integer
+                  default: 500
+                chunk_overlap:
+                  type: integer
+                  default: 50
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 5
+      responses:
+        '202':
+          description: Batch embedding job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchEmbeddingJobResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /embeddings/models:
+    get:
+      tags: [Embeddings]
+      summary: List available embedding models
+      description: |
+        Returns information about available embedding models including
+        dimensions, languages supported, and performance characteristics.
+      operationId: listEmbeddingModels
+      responses:
+        '200':
+          description: Model list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelsResponse'
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    EmbeddingJobResponse:
+      type: object
+      required:
+        - job_id
+        - document_id
+        - status
+        - created_at
+      properties:
+        job_id:
+          type: integer
+          description: Unique job identifier
+          example: 1234
+        document_id:
+          type: integer
+          example: 42
+        status:
+          type: string
+          enum: [pending, in_progress, completed, failed]
+        model:
+          type: string
+          description: Embedding model being used
+          example: "multilingual-e5-base"
+        estimated_chunks:
+          type: integer
+          description: Estimated number of chunks to generate
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+          nullable: true
+
+    EmbeddingStatusResponse:
+      type: object
+      required:
+        - document_id
+        - embedding_status
+      properties:
+        document_id:
+          type: integer
+          example: 42
+        embedding_status:
+          type: string
+          enum: [not_started, in_progress, completed, failed]
+        chunk_count:
+          type: integer
+          description: Number of chunks created
+          nullable: true
+        embedding_model:
+          type: string
+          nullable: true
+          example: "multilingual-e5-base"
+        embedding_dimensions:
+          type: integer
+          nullable: true
+          example: 768
+        embedding_generated_at:
+          type: string
+          format: date-time
+          nullable: true
+        progress_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+        chunking_params:
+          type: object
+          nullable: true
+          properties:
+            chunk_size:
+              type: integer
+            chunk_overlap:
+              type: integer
+
+    ChunksResponse:
+      type: object
+      required:
+        - document_id
+        - total_chunks
+        - page
+        - page_size
+        - chunks
+      properties:
+        document_id:
+          type: integer
+          example: 42
+        total_chunks:
+          type: integer
+          example: 45
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 20
+        total_pages:
+          type: integer
+          example: 3
+        chunks:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentChunk'
+
+    DocumentChunk:
+      type: object
+      required:
+        - chunk_id
+        - chunk_sequence
+        - chunk_text
+        - token_count
+      properties:
+        chunk_id:
+          type: integer
+          example: 9876
+        chunk_sequence:
+          type: integer
+          description: Sequence number within document (0-indexed)
+          example: 0
+        chunk_text:
+          type: string
+          description: Text content of chunk
+        token_count:
+          type: integer
+          example: 485
+        page_start:
+          type: integer
+          nullable: true
+          description: Starting page number
+        page_end:
+          type: integer
+          nullable: true
+          description: Ending page number
+        section_heading:
+          type: string
+          nullable: true
+          description: Nearest section heading for context
+        char_offset_start:
+          type: integer
+          nullable: true
+        char_offset_end:
+          type: integer
+          nullable: true
+        embedding_vector:
+          type: array
+          nullable: true
+          description: Embedding vector (only if include_embeddings=true)
+          items:
+            type: number
+            format: float
+        embedding_model:
+          type: string
+          nullable: true
+          example: "multilingual-e5-base"
+        embedding_generated_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    BatchEmbeddingJobResponse:
+      type: object
+      required:
+        - batch_job_id
+        - document_count
+        - status
+        - created_at
+      properties:
+        batch_job_id:
+          type: integer
+          example: 5678
+        document_count:
+          type: integer
+          example: 25
+        status:
+          type: string
+          enum: [pending, in_progress, completed, failed]
+        individual_jobs:
+          type: array
+          items:
+            type: object
+            properties:
+              document_id:
+                type: integer
+              job_id:
+                type: integer
+              status:
+                type: string
+        created_at:
+          type: string
+          format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+          nullable: true
+
+    ModelsResponse:
+      type: object
+      required:
+        - models
+      properties:
+        models:
+          type: array
+          items:
+            type: object
+            required:
+              - model_name
+              - dimensions
+              - languages
+            properties:
+              model_name:
+                type: string
+                example: "multilingual-e5-base"
+              display_name:
+                type: string
+                example: "Multilingual-E5 Base"
+              dimensions:
+                type: integer
+                example: 768
+              max_tokens:
+                type: integer
+                example: 512
+              languages:
+                type: array
+                items:
+                  type: string
+                example: ["en", "zh", "es", "fr", "de"]
+              performance:
+                type: object
+                properties:
+                  tokens_per_second:
+                    type: integer
+                    description: Average throughput
+                  memory_usage_mb:
+                    type: integer
+                    description: Approximate memory footprint
+              recommended_use_case:
+                type: string
+                example: "General semantic search with good multilingual support"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "NO_EXTRACTED_TEXT"
+        message:
+          type: string
+          example: "Document must have extracted text before generating embeddings"
+        details:
+          type: object
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FileText, Download, RefreshCw } from 'lucide-react';
+import { ArrowLeft, FileText, Download, RefreshCw, Search, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { apiClient } from '@/lib/api/client';
@@ -35,20 +35,30 @@ export default function DocumentsPage() {
   }, [page]);
 
   const getStatusBadge = (status: string) => {
-    const badges: Record<string, string> = {
-      uploaded: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      processing: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      failed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+    const badges: Record<string, { class: string; label: string }> = {
+      uploaded: { 
+        class: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', 
+        label: 'Uploaded' 
+      },
+      parsing: { 
+        class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200', 
+        label: 'Parsing...' 
+      },
+      parsed: { 
+        class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', 
+        label: '✓ Ready to Search' 
+      },
+      failed: { 
+        class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', 
+        label: 'Failed' 
+      },
     };
 
+    const badge = badges[status] || badges.uploaded;
+
     return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${
-          badges[status] || badges.uploaded
-        }`}
-      >
-        {status}
+      <span className={`px-3 py-1 rounded-full text-xs font-medium ${badge.class}`}>
+        {badge.label}
       </span>
     );
   };
@@ -123,6 +133,34 @@ export default function DocumentsPage() {
             </Card>
           ) : (
             <>
+              {/* What's Next Card */}
+              {documents.some((doc) => doc.processing_status === 'parsed') && (
+                <Card className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-2 border-blue-200 dark:border-blue-800">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <CheckCircle2 className="h-10 w-10 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                          <Sparkles className="h-5 w-5 text-purple-600" />
+                          Your Documents Are Ready!
+                        </h3>
+                        <p className="text-slate-700 dark:text-slate-300 mb-4">
+                          Your markdown files have been processed and indexed. You can now search through them using natural language queries.
+                        </p>
+                        <Button size="lg" asChild>
+                          <Link href="/search">
+                            <Search className="mr-2 h-5 w-5" />
+                            Start Searching
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="space-y-4">
                 {documents.map((doc) => (
                   <Card key={doc.document_id}>

@@ -6,6 +6,7 @@ This module provides reusable dependencies for FastAPI routes.
 from collections.abc import AsyncGenerator
 
 from config.settings import Settings
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.ingestion_parsing.storage.file_storage import FileStorage, LocalFileStorage, S3FileStorage
@@ -18,6 +19,10 @@ from src.storage_indexing.repositories.job_repository import JobRepository
 from src.storage_indexing.repositories.upload_session_repository import (
     UploadSessionRepository,
 )
+from src.rag_orchestration.services.embedding_service import EmbeddingService
+from src.rag_orchestration.services.search_service import SearchService
+from src.storage_indexing.repositories.search_query_repository import SearchQueryRepository
+from src.storage_indexing.repositories.search_result_repository import SearchResultRepository
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -83,64 +88,79 @@ def get_file_storage() -> FileStorage:
         raise ValueError(f"Unknown storage backend: {settings.storage_backend}")
 
 
-async def get_quota_manager() -> AsyncGenerator[QuotaManager, None]:
+async def get_quota_manager(session: AsyncSession = Depends(get_db)) -> QuotaManager:
     """Get quota manager dependency.
     
-    Yields:
-        QuotaManager: Quota manager instance
+    Args:
+        session: Database session (injected)
         
-    Example:
-        >>> @router.post("/upload")
-        >>> async def upload_file(quota: QuotaManager = Depends(get_quota_manager)):
-        >>>     await quota.check_quota(tenant_id=1, file_size=5000000)
+    Returns:
+        QuotaManager: Quota manager instance
     """
-    async for session in get_db():
-        yield QuotaManager(session)
+    return QuotaManager(session)
 
 
-async def get_document_repository() -> AsyncGenerator[DocumentRepository, None]:
+async def get_document_repository(session: AsyncSession = Depends(get_db)) -> DocumentRepository:
     """Get document repository dependency.
     
-    Yields:
-        DocumentRepository: Document repository instance
+    Args:
+        session: Database session (injected)
         
-    Example:
-        >>> @router.get("/documents/{doc_id}")
-        >>> async def get_document(
-        ...     doc_id: int,
-        ...     repo: DocumentRepository = Depends(get_document_repository)
-        ... ):
-        ...     return await repo.get_by_id(doc_id, tenant_id=1)
+    Returns:
+        DocumentRepository: Document repository instance
     """
-    async for session in get_db():
-        yield DocumentRepository(session)
+    return DocumentRepository(session)
 
 
-async def get_chunk_repository() -> AsyncGenerator[ChunkRepository, None]:
+async def get_chunk_repository(session: AsyncSession = Depends(get_db)) -> ChunkRepository:
     """Get chunk repository dependency.
     
-    Yields:
+    Args:
+        session: Database session (injected)
+        
+    Returns:
         ChunkRepository: Chunk repository instance
     """
-    async for session in get_db():
-        yield ChunkRepository(session)
+    return ChunkRepository(session)
 
 
-async def get_job_repository() -> AsyncGenerator[JobRepository, None]:
+async def get_job_repository(session: AsyncSession = Depends(get_db)) -> JobRepository:
     """Get job repository dependency.
     
-    Yields:
+    Args:
+        session: Database session (injected)
+        
+    Returns:
         JobRepository: Job repository instance
     """
-    async for session in get_db():
-        yield JobRepository(session)
+    return JobRepository(session)
 
 
-async def get_upload_session_repository() -> AsyncGenerator[UploadSessionRepository, None]:
+async def get_upload_session_repository(session: AsyncSession = Depends(get_db)) -> UploadSessionRepository:
     """Get upload session repository dependency.
     
-    Yields:
+    Args:
+        session: Database session (injected)
+        
+    Returns:
         UploadSessionRepository: Upload session repository instance
     """
-    async for session in get_db():
-        yield UploadSessionRepository(session)
+    return UploadSessionRepository(session)
+
+
+def get_embedding_service(settings: Settings = Depends(get_settings)) -> EmbeddingService:
+    """Get embedding service dependency."""
+    return EmbeddingService(settings)
+
+
+async def get_search_service(
+    session: AsyncSession = Depends(get_db),
+    embedding_service: EmbeddingService = Depends(get_embedding_service),
+) -> SearchService:
+    """Get search service dependency."""
+    return SearchService(
+        session=session,
+        embedding_service=embedding_service,
+        query_repo=SearchQueryRepository(session),
+        result_repo=SearchResultRepository(session)
+    )

@@ -4,7 +4,7 @@ import structlog
 
 from src.ingestion_parsing.parsers.parser_factory import ParserFactory
 from src.ingestion_parsing.services.chunking_service import ChunkingService
-from src.storage_indexing.models import ProcessingStatus
+from src.storage_indexing.models import JobStatus, ProcessingStatus
 from src.storage_indexing.repositories.chunk_repository import ChunkRepository
 from src.storage_indexing.repositories.document_repository import DocumentRepository
 from src.storage_indexing.repositories.job_repository import JobRepository
@@ -88,7 +88,7 @@ class ParsingService:
             if job:
                 await self.job_repo.update_status(
                     job_id=job.job_id,
-                    status=ProcessingStatus.PROCESSING.value,
+                    status=JobStatus.PROCESSING.value,
                     progress_percent=0,
                 )
             
@@ -98,7 +98,7 @@ class ParsingService:
             if job:
                 await self.job_repo.update_status(
                     job_id=job.job_id,
-                    status=ProcessingStatus.PROCESSING.value,
+                    status=JobStatus.PROCESSING.value,
                     progress_percent=25,
                 )
             
@@ -109,7 +109,7 @@ class ParsingService:
             if job:
                 await self.job_repo.update_status(
                     job_id=job.job_id,
-                    status=ProcessingStatus.PROCESSING.value,
+                    status=JobStatus.PROCESSING.value,
                     progress_percent=50,
                 )
             
@@ -123,7 +123,7 @@ class ParsingService:
             if job:
                 await self.job_repo.update_status(
                     job_id=job.job_id,
-                    status=ProcessingStatus.PROCESSING.value,
+                    status=JobStatus.PROCESSING.value,
                     progress_percent=75,
                 )
             
@@ -144,7 +144,7 @@ class ParsingService:
             if job:
                 await self.job_repo.update_status(
                     job_id=job.job_id,
-                    status=ProcessingStatus.PROCESSING.value,
+                    status=JobStatus.PROCESSING.value,
                     progress_percent=90,
                 )
             
@@ -169,7 +169,7 @@ class ParsingService:
             if job:
                 await self.job_repo.update_status(
                     job_id=job.job_id,
-                    status=ProcessingStatus.COMPLETED.value,
+                    status=JobStatus.COMPLETED.value,
                     progress_percent=100,
                 )
             
@@ -192,7 +192,7 @@ class ParsingService:
             if job:
                 await self.job_repo.update_status(
                     job_id=job.job_id,
-                    status=ProcessingStatus.FAILED.value,
+                    status=JobStatus.FAILED.value,
                     error_message=str(e),
                 )
             
