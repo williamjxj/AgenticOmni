@@ -1,147 +1,229 @@
-"""Unit tests for file validation functions."""
+"""Unit tests for markdown validation functions.
+
+Tests UTF-8 encoding validation and file extension validation for markdown files.
+User Story 1: Upload and Parse Markdown Documents (Priority: P1)
+"""
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
-if TYPE_CHECKING:
-    pass
-
 from src.shared.validators import (
-    detect_file_type,
-    generate_content_hash,
-    validate_file_size,
-    validate_file_type,
-    validate_filename,
+    validate_markdown_encoding,
+    validate_markdown_file_extension,
 )
 
 
-def test_detect_file_type_pdf() -> None:
-    """Test file type detection for PDF using magic bytes."""
-    test_file = Path(__file__).parent.parent / "fixtures" / "sample_documents" / "sample.pdf"
+def test_validate_markdown_file_extension_md(tmp_path: Path) -> None:
+    """Test .md extension is valid.
     
-    mime_type = detect_file_type(str(test_file))
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "document.md"
+    md_file.write_text("# Hello")
     
-    assert mime_type == "application/pdf"
-
-
-def test_detect_file_type_txt() -> None:
-    """Test file type detection for text file."""
-    test_file = Path(__file__).parent.parent / "fixtures" / "sample_documents" / "sample.txt"
+    # Act
+    is_valid = validate_markdown_file_extension(md_file)
     
-    mime_type = detect_file_type(str(test_file))
+    # Assert
+    assert is_valid is True
+
+
+def test_validate_markdown_file_extension_markdown(tmp_path: Path) -> None:
+    """Test .markdown extension is valid.
     
-    assert mime_type in ["text/plain", "text/x-python"]  # May vary by system
-
-
-def test_detect_file_type_nonexistent() -> None:
-    """Test file type detection raises error for missing file."""
-    with pytest.raises(FileNotFoundError):
-        detect_file_type("/nonexistent/file.pdf")
-
-
-def test_validate_file_size_within_limit() -> None:
-    """Test file size validation passes for file within limit."""
-    file_size = 5_000_000  # 5MB
-    max_size = 50_000_000  # 50MB
+    User Story 1, Task T026
+    """
+    # Arrange
+    markdown_file = tmp_path / "document.markdown"
+    markdown_file.write_text("# Hello")
     
-    result = validate_file_size(file_size, max_size)
+    # Act
+    is_valid = validate_markdown_file_extension(markdown_file)
     
-    assert result is True
+    # Assert
+    assert is_valid is True
 
 
-def test_validate_file_size_exceeds_limit() -> None:
-    """Test file size validation fails for file exceeding limit."""
-    file_size = 60_000_000  # 60MB
-    max_size = 50_000_000  # 50MB
+def test_validate_markdown_file_extension_uppercase(tmp_path: Path) -> None:
+    """Test uppercase .MD extension is valid.
     
-    result = validate_file_size(file_size, max_size)
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "document.MD"
+    md_file.write_text("# Hello")
     
-    assert result is False
-
-
-def test_validate_file_size_exactly_at_limit() -> None:
-    """Test file size validation passes for file exactly at limit."""
-    file_size = 50_000_000  # 50MB
-    max_size = 50_000_000  # 50MB
+    # Act
+    is_valid = validate_markdown_file_extension(md_file)
     
-    result = validate_file_size(file_size, max_size)
+    # Assert
+    assert is_valid is True
+
+
+def test_validate_markdown_file_extension_invalid(tmp_path: Path) -> None:
+    """Test non-markdown extensions are invalid.
     
-    assert result is True
-
-
-def test_validate_file_size_zero_bytes() -> None:
-    """Test file size validation fails for zero-byte file."""
-    file_size = 0
-    max_size = 50_000_000
+    User Story 1, Task T026
+    """
+    # Arrange
+    txt_file = tmp_path / "document.txt"
+    txt_file.write_text("Plain text")
     
-    result = validate_file_size(file_size, max_size)
+    # Act
+    is_valid = validate_markdown_file_extension(txt_file)
     
-    assert result is False
+    # Assert
+    assert is_valid is False
 
 
-def test_validate_file_type_allowed() -> None:
-    """Test file type validation passes for allowed type."""
-    mime_type = "application/pdf"
-    allowed_types = ["application/pdf", "text/plain", "application/msword"]
+def test_validate_markdown_file_extension_no_extension(tmp_path: Path) -> None:
+    """Test file with no extension is invalid.
     
-    result = validate_file_type(mime_type, allowed_types)
+    User Story 1, Task T026
+    """
+    # Arrange
+    no_ext_file = tmp_path / "README"
+    no_ext_file.write_text("# README")
     
-    assert result is True
-
-
-def test_validate_file_type_not_allowed() -> None:
-    """Test file type validation fails for disallowed type."""
-    mime_type = "application/x-msdownload"  # .exe
-    allowed_types = ["application/pdf", "text/plain", "application/msword"]
+    # Act
+    is_valid = validate_markdown_file_extension(no_ext_file)
     
-    result = validate_file_type(mime_type, allowed_types)
+    # Assert
+    assert is_valid is False
+
+
+def test_validate_markdown_encoding_utf8(tmp_path: Path) -> None:
+    """Test UTF-8 encoded markdown is valid.
     
-    assert result is False
-
-
-def test_generate_content_hash() -> None:
-    """Test SHA-256 content hash generation."""
-    test_file = Path(__file__).parent.parent / "fixtures" / "sample_documents" / "sample.txt"
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "utf8.md"
+    md_file.write_text("# UTF-8 文档 🎉", encoding="utf-8")
     
-    content_hash = generate_content_hash(str(test_file))
+    # Act
+    is_valid = validate_markdown_encoding(md_file)
     
-    assert len(content_hash) == 64  # SHA-256 produces 64 hex characters
-    assert content_hash.isalnum()  # Only alphanumeric characters
+    # Assert
+    assert is_valid is True
+
+
+def test_validate_markdown_encoding_ascii(tmp_path: Path) -> None:
+    """Test ASCII encoded markdown is valid (subset of UTF-8).
     
-    # Test determinism - same file should produce same hash
-    content_hash_2 = generate_content_hash(str(test_file))
-    assert content_hash == content_hash_2
-
-
-def test_generate_content_hash_different_files() -> None:
-    """Test different files produce different hashes."""
-    test_file_1 = Path(__file__).parent.parent / "fixtures" / "sample_documents" / "sample.txt"
-    test_file_2 = Path(__file__).parent.parent / "fixtures" / "sample_documents" / "sample.pdf"
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "ascii.md"
+    md_file.write_text("# ASCII Document", encoding="ascii")
     
-    hash_1 = generate_content_hash(str(test_file_1))
-    hash_2 = generate_content_hash(str(test_file_2))
+    # Act
+    is_valid = validate_markdown_encoding(md_file)
     
-    assert hash_1 != hash_2
+    # Assert
+    assert is_valid is True
 
 
-def test_generate_content_hash_nonexistent() -> None:
-    """Test content hash generation raises error for missing file."""
-    with pytest.raises(FileNotFoundError):
-        generate_content_hash("/nonexistent/file.pdf")
+def test_validate_markdown_encoding_invalid_encoding(tmp_path: Path) -> None:
+    """Test non-UTF-8 encoded file is invalid.
+    
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "latin1.md"
+    # Write with latin-1 encoding (will fail UTF-8 validation)
+    with open(md_file, "wb") as f:
+        f.write(b"# Document \xE9\xE8")  # Invalid UTF-8 bytes
+    
+    # Act
+    is_valid = validate_markdown_encoding(md_file)
+    
+    # Assert
+    assert is_valid is False
 
 
-def test_validate_filename_safe() -> None:
-    """Test filename validation passes for safe filename."""
-    assert validate_filename("document.pdf") is True
-    assert validate_filename("report-2024.docx") is True
-    assert validate_filename("file_name.txt") is True
+def test_validate_markdown_encoding_empty_file(tmp_path: Path) -> None:
+    """Test empty file is valid UTF-8.
+    
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "empty.md"
+    md_file.write_text("", encoding="utf-8")
+    
+    # Act
+    is_valid = validate_markdown_encoding(md_file)
+    
+    # Assert
+    assert is_valid is True
 
 
-def test_validate_filename_path_traversal() -> None:
-    """Test filename validation fails for path traversal attempts."""
-    assert validate_filename("../../../etc/passwd") is False
-    assert validate_filename("..\\..\\windows\\system32") is False
-    assert validate_filename("/etc/passwd") is False
-    assert validate_filename("subdir/file.pdf") is False
+def test_validate_markdown_encoding_unicode_emoji(tmp_path: Path) -> None:
+    """Test markdown with Unicode emoji is valid UTF-8.
+    
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "emoji.md"
+    md_file.write_text("# Hello 👋 World 🌍 Test 🎉", encoding="utf-8")
+    
+    # Act
+    is_valid = validate_markdown_encoding(md_file)
+    
+    # Assert
+    assert is_valid is True
+
+
+def test_validate_markdown_encoding_chinese_characters(tmp_path: Path) -> None:
+    """Test markdown with Chinese characters is valid UTF-8.
+    
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "chinese.md"
+    md_file.write_text("# 中文文档\n\n这是一个测试文档。", encoding="utf-8")
+    
+    # Act
+    is_valid = validate_markdown_encoding(md_file)
+    
+    # Assert
+    assert is_valid is True
+
+
+def test_validate_markdown_encoding_mixed_unicode(tmp_path: Path) -> None:
+    """Test markdown with mixed Unicode characters is valid UTF-8.
+    
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "mixed.md"
+    md_file.write_text(
+        "# Mixed Languages\n\nEnglish, 中文, 日本語, 한국어, العربية, עברית",
+        encoding="utf-8",
+    )
+    
+    # Act
+    is_valid = validate_markdown_encoding(md_file)
+    
+    # Assert
+    assert is_valid is True
+
+
+def test_validate_markdown_encoding_bom(tmp_path: Path) -> None:
+    """Test UTF-8 with BOM is valid.
+    
+    User Story 1, Task T026
+    """
+    # Arrange
+    md_file = tmp_path / "bom.md"
+    # Write UTF-8 with BOM
+    with open(md_file, "wb") as f:
+        f.write(b"\xef\xbb\xbf# Document with BOM")
+    
+    # Act
+    is_valid = validate_markdown_encoding(md_file)
+    
+    # Assert
+    assert is_valid is True

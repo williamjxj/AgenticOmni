@@ -1,12 +1,17 @@
 """Document model for uploaded files."""
 
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import JSON, BigInteger, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.storage_indexing.models.base import Base, TenantScopedMixin, TimestampMixin
+
+if TYPE_CHECKING:
+    from src.storage_indexing.models.folder_batch import FolderBatch
+    from src.storage_indexing.models.image_reference import ImageReference
+    from src.storage_indexing.models.markdown_metadata import MarkdownMetadata
 
 
 class ProcessingStatus(str, Enum):
@@ -131,6 +136,34 @@ class Document(Base, TenantScopedMixin, TimestampMixin):
         nullable=True,
         default=dict,
         comment="Document-specific metadata (JSONB)",
+    )
+
+    # Folder batch support for markdown ingestion (T018)
+    folder_batch_id: Mapped[int | None] = mapped_column(
+        BigInteger,
+        ForeignKey("folder_batches.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+        comment="Foreign key to folder_batches for batch uploads",
+    )
+
+    # Relationships for markdown ingestion
+    folder_batch = relationship(
+        "FolderBatch",
+        back_populates="documents"
+    )
+    
+    markdown_metadata = relationship(
+        "MarkdownMetadata",
+        back_populates="document",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+    
+    image_references = relationship(
+        "ImageReference",
+        back_populates="document",
+        cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:

@@ -69,18 +69,18 @@ def get_file_storage() -> FileStorage:
         >>> async def upload_file(storage: FileStorage = Depends(get_file_storage)):
         >>>     await storage.upload(file_path, storage_key)
     """
-    if settings.upload.storage_backend == "local":
-        return LocalFileStorage(base_dir=settings.upload.upload_dir)
-    elif settings.upload.storage_backend == "s3":
+    if settings.storage_backend == "local":
+        return LocalFileStorage(base_dir=settings.upload_dir)
+    elif settings.storage_backend == "s3":
         # S3 configuration would come from settings
         return S3FileStorage(
-            bucket=settings.upload.s3_bucket,
-            region=settings.upload.s3_region,
-            access_key=settings.upload.aws_access_key_id,
-            secret_key=settings.upload.aws_secret_access_key,
+            bucket=settings.s3_bucket,
+            region=settings.s3_region,
+            access_key=settings.aws_access_key_id,
+            secret_key=settings.aws_secret_access_key,
         )
     else:
-        raise ValueError(f"Unknown storage backend: {settings.upload.storage_backend}")
+        raise ValueError(f"Unknown storage backend: {settings.storage_backend}")
 
 
 async def get_quota_manager() -> AsyncGenerator[QuotaManager, None]:

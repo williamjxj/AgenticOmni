@@ -117,14 +117,18 @@ class UploadService:
         # Detect file type using magic bytes
         detected_mime_type = detect_file_type(file_path)
         
+        # Force MIME type for markdown files (magic bytes can misdetect)
+        if original_filename.lower().endswith(('.md', '.markdown')):
+            detected_mime_type = 'text/markdown'
+        
         # Check if file type is allowed
         allowed_types = self._get_allowed_mime_types()
         if not validate_file_type(detected_mime_type, allowed_types):
             raise FileTypeNotAllowedError(
                 f"File type '{detected_mime_type}' is not allowed. "
-                f"Allowed types: {', '.join(settings.upload.get_allowed_file_types_list())}",
+                f"Allowed types: {', '.join(settings.get_allowed_file_types_list())}",
                 file_type=detected_mime_type,
-                allowed_types=settings.upload.get_allowed_file_types_list(),
+                allowed_types=settings.get_allowed_file_types_list(),
             )
         
         # Check file size
@@ -134,7 +138,7 @@ class UploadService:
         if not validate_file_size(file_size, max_size_bytes):
             raise FileTooLargeError(
                 f"File size {file_size / 1024 / 1024:.2f}MB exceeds maximum allowed size of "
-                f"{settings.upload.max_upload_size_mb}MB",
+                f"{settings.max_upload_size_mb}MB",
                 file_size=file_size,
                 max_size=max_size_bytes,
             )
@@ -143,11 +147,11 @@ class UploadService:
         await self.quota_manager.check_quota(tenant_id=tenant_id, file_size=file_size)
         
         # Malware scan (if enabled)
-        if settings.upload.enable_malware_scanning:
+        if settings.enable_malware_scanning:
             is_clean, virus_name = await scan_for_malware(
                 file_path=file_path,
-                clamav_host=settings.upload.clamav_host,
-                clamav_port=settings.upload.clamav_port,
+                clamav_host=settings.clamav_host,
+                clamav_port=settings.clamav_port,
             )
             if not is_clean:
                 raise MalwareScanFailedError(
@@ -200,13 +204,13 @@ class UploadService:
         temp_file = None
         try:
             # Save uploaded file to temporary location
-            temp_dir = Path(settings.upload.temp_upload_dir)
+            temp_dir = Path(settings.temp_upload_dir)
             temp_dir.mkdir(parents=True, exist_ok=True)
             
             temp_file = temp_dir / f"upload_{uuid.uuid4().hex}"
             
             async with aiofiles.open(temp_file, "wb") as f:
-                content = await file.read() if hasattr(file, "read") else file
+                content = file.read() if hasattr(file, "read") else file
                 await f.write(content)
             
             # Validate file
@@ -301,7 +305,7 @@ class UploadService:
         from src.shared.validators import get_mime_type_map
         
         mime_map = get_mime_type_map()
-        allowed_extensions = settings.upload.get_allowed_file_types_list()
+        allowed_extensions = settings.get_allowed_file_types_list()
         
         return [mime_map.get(ext, "") for ext in allowed_extensions if ext in mime_map]
 

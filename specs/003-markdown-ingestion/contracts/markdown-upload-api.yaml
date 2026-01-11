@@ -1,0 +1,554 @@
+openapi: 3.0.3
+info:
+  title: Markdown Document Upload API
+  description: |
+    Extensions to existing document upload endpoints to support markdown file ingestion.
+    These endpoints extend `/api/v1/documents/upload` and `/api/v1/documents/batch-upload`
+    with markdown-specific capabilities.
+  version: 1.0.0
+  contact:
+    name: AgenticOmni API Support
+    email: api@agenticomni.example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.agenticomni.example.com/v1
+    description: Production server
+
+paths:
+  /documents/upload:
+    post:
+      summary: Upload single document (includes markdown support)
+      description: |
+        Upload a single document file. **Extended to support markdown files (.md, .markdown)**.
+        
+        Markdown-specific features:
+        - Automatic frontmatter extraction
+        - Code block and Mermaid diagram detection
+        - Image reference extraction
+        - Table structure preservation
+        
+        Existing document types still supported: PDF, DOCX, TXT.
+      operationId: uploadDocument
+      tags:
+        - Document Upload
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - tenant_id
+                - user_id
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: |
+                    Document file. For markdown: .md or .markdown extension required.
+                tenant_id:
+                  type: integer
+                  format: int64
+                  example: 1
+                user_id:
+                  type: integer
+                  format: int64
+                  example: 42
+                extract_images:
+                  type: boolean
+                  description: |
+                    For markdown files: extract image references to ImageReference entities.
+                    Default true for markdown, ignored for other file types.
+                  default: true
+                process_mermaid:
+                  type: boolean
+                  description: |
+                    For markdown files: detect and extract Mermaid diagrams.
+                    Default true for markdown, ignored for other file types.
+                  default: true
+      responses:
+        '201':
+          description: Document uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUploadResponse'
+              examples:
+                markdown_upload:
+                  value:
+                    document_id: 1001
+                    filename: "doc_20260110_abc123.md"
+                    original_filename: "api-documentation.md"
+                    mime_type: "text/markdown"
+                    file_size: 15234
+                    status: "pending"
+                    parsing_job_id: 5001
+                    created_at: "2026-01-10T10:30:00Z"
+                    markdown_metadata:
+                      has_frontmatter: true
+                      frontmatter_preview:
+                        title: "API Documentation"
+                        author: "John Doe"
+                      heading_count: 12
+                      code_block_count: 8
+                      mermaid_diagram_count: 2
+                      table_count: 3
+                      image_count: 5
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_encoding:
+                  value:
+                    error: "ValidationError"
+                    message: "Markdown file must be UTF-8 encoded"
+                    details:
+                      filename: "document.md"
+                      detected_encoding: "latin-1"
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /documents/{document_id}/markdown-metadata:
+    get:
+      summary: Get markdown-specific metadata
+      description: |
+        Retrieve detailed markdown metadata for a document including frontmatter,
+        structural counts, code blocks, images, and links.
+        
+        Only available for documents with mime_type = 'text/markdown'.
+      operationId: getMarkdownMetadata
+      tags:
+        - Markdown Metadata
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: Document identifier
+          schema:
+            type: integer
+            format: int64
+          example: 1001
+      responses:
+        '200':
+          description: Markdown metadata retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkdownMetadataResponse'
+              examples:
+                full_metadata:
+                  value:
+                    document_id: 1001
+                    frontmatter:
+                      title: "API Documentation"
+                      author: "John Doe"
+                      date: "2026-01-10"
+                      tags: ["api", "rest", "documentation"]
+                      category: "engineering"
+                      published: true
+                    has_yaml_frontmatter: true
+                    heading_count: 12
+                    code_block_count: 8
+                    mermaid_diagram_count: 2
+                    table_count: 3
+                    link_count: 24
+                    image_count: 5
+                    link_urls:
+                      - "https://example.com/api"
+                      - "https://github.com/org/repo"
+                    created_at: "2026-01-10T10:30:15Z"
+        '404':
+          description: Document not found or not a markdown document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /documents/{document_id}/images:
+    get:
+      summary: Get image references from markdown document
+      description: |
+        Retrieve all image references extracted from a markdown document.
+        Includes URLs, local paths, alt text, and OCR processing status.
+      operationId: getDocumentImages
+      tags:
+        - Markdown Metadata
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1001
+        - name: image_type
+          in: query
+          required: false
+          description: Filter by image type
+          schema:
+            type: string
+            enum: [local, external, base64]
+        - name: ocr_pending
+          in: query
+          required: false
+          description: Filter by OCR pending status
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Image references retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageReferencesResponse'
+              examples:
+                image_list:
+                  value:
+                    document_id: 1001
+                    total_images: 5
+                    images:
+                      - image_id: 2001
+                        image_url: "https://example.com/diagram.png"
+                        alt_text: "Architecture diagram"
+                        is_local_path: false
+                        is_base64: false
+                        is_external_url: true
+                        ocr_pending: false
+                        position_in_document: 125
+                      - image_id: 2002
+                        image_url: "./images/screenshot.png"
+                        alt_text: "Dashboard screenshot"
+                        is_local_path: true
+                        resolved_path: "/uploads/tenant_1/doc_1001/images/screenshot.png"
+                        file_size_bytes: 245678
+                        ocr_pending: true
+                      - image_id: 2003
+                        image_url: "data:image/png;base64,iVBORw0KG..."
+                        alt_text: "Embedded icon"
+                        is_base64: true
+                        file_size_bytes: 1234
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /documents/search:
+    get:
+      summary: Search documents with markdown filters
+      description: |
+        Search documents with optional markdown-specific filters.
+        Extends existing document search with frontmatter queries.
+      operationId: searchDocuments
+      tags:
+        - Document Search
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: false
+          description: Full-text search query
+          schema:
+            type: string
+          example: "API authentication"
+        - name: mime_type
+          in: query
+          required: false
+          description: Filter by MIME type
+          schema:
+            type: string
+          example: "text/markdown"
+        - name: frontmatter_filter
+          in: query
+          required: false
+          description: |
+            JSONB filter for frontmatter. Format: "key:value" or "key.nested:value"
+          schema:
+            type: string
+          examples:
+            simple:
+              value: "category:engineering"
+            nested:
+              value: "author.name:John Doe"
+        - name: has_mermaid
+          in: query
+          required: false
+          description: Filter documents containing Mermaid diagrams
+          schema:
+            type: boolean
+        - name: min_heading_count
+          in: query
+          required: false
+          description: Minimum number of headings (for structured documents)
+          schema:
+            type: integer
+            minimum: 0
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentSearchResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DocumentUploadResponse:
+      type: object
+      required:
+        - document_id
+        - filename
+        - original_filename
+        - mime_type
+        - file_size
+        - status
+        - created_at
+      properties:
+        document_id:
+          type: integer
+          format: int64
+          example: 1001
+        filename:
+          type: string
+          description: Sanitized filename with timestamp
+          example: "doc_20260110_abc123.md"
+        original_filename:
+          type: string
+          example: "api-documentation.md"
+        mime_type:
+          type: string
+          example: "text/markdown"
+        file_size:
+          type: integer
+          format: int64
+          description: File size in bytes
+          example: 15234
+        status:
+          type: string
+          enum: [pending, parsing, completed, failed]
+          example: "pending"
+        parsing_job_id:
+          type: integer
+          format: int64
+          description: Background parsing job ID
+          example: 5001
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-10T10:30:00Z"
+        markdown_metadata:
+          type: object
+          description: Preview of markdown metadata (if available)
+          properties:
+            has_frontmatter:
+              type: boolean
+            frontmatter_preview:
+              type: object
+              additionalProperties: true
+            heading_count:
+              type: integer
+            code_block_count:
+              type: integer
+            mermaid_diagram_count:
+              type: integer
+            table_count:
+              type: integer
+            image_count:
+              type: integer
+
+    MarkdownMetadataResponse:
+      type: object
+      required:
+        - document_id
+        - has_yaml_frontmatter
+        - created_at
+      properties:
+        document_id:
+          type: integer
+          format: int64
+          example: 1001
+        frontmatter:
+          type: object
+          description: Parsed YAML frontmatter
+          additionalProperties: true
+        has_yaml_frontmatter:
+          type: boolean
+          example: true
+        heading_count:
+          type: integer
+          example: 12
+        code_block_count:
+          type: integer
+          example: 8
+        mermaid_diagram_count:
+          type: integer
+          example: 2
+        table_count:
+          type: integer
+          example: 3
+        link_count:
+          type: integer
+          example: 24
+        image_count:
+          type: integer
+          example: 5
+        link_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+        created_at:
+          type: string
+          format: date-time
+
+    ImageReferencesResponse:
+      type: object
+      required:
+        - document_id
+        - total_images
+        - images
+      properties:
+        document_id:
+          type: integer
+          format: int64
+        total_images:
+          type: integer
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageReference'
+
+    ImageReference:
+      type: object
+      required:
+        - image_id
+        - image_url
+      properties:
+        image_id:
+          type: integer
+          format: int64
+        image_url:
+          type: string
+          description: Image URL/path as in markdown
+        alt_text:
+          type: string
+          description: Alt text from markdown
+        is_local_path:
+          type: boolean
+        is_base64:
+          type: boolean
+        is_external_url:
+          type: boolean
+        resolved_path:
+          type: string
+          description: Absolute path if local image
+        file_size_bytes:
+          type: integer
+          format: int64
+        ocr_pending:
+          type: boolean
+          description: Flag for future OCR processing
+        ocr_completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        position_in_document:
+          type: integer
+          description: Line number in markdown
+
+    DocumentSearchResponse:
+      type: object
+      required:
+        - total
+        - page
+        - page_size
+        - results
+      properties:
+        total:
+          type: integer
+          description: Total matching documents
+        page:
+          type: integer
+        page_size:
+          type: integer
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              document_id:
+                type: integer
+                format: int64
+              filename:
+                type: string
+              mime_type:
+                type: string
+              file_size:
+                type: integer
+                format: int64
+              created_at:
+                type: string
+                format: date-time
+              markdown_metadata:
+                type: object
+                description: Summary if markdown document
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        request_id:
+          type: string
+          format: uuid
+
+tags:
+  - name: Document Upload
+    description: Single and batch document upload operations
+  - name: Markdown Metadata
+    description: Markdown-specific metadata and image references
+  - name: Document Search
+    description: Document search with markdown filters

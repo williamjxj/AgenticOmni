@@ -15,9 +15,13 @@ from src.shared.config import settings
 from src.storage_indexing.models import Base
 from src.storage_indexing.models.document import Document  # noqa: F401
 from src.storage_indexing.models.document_chunk import DocumentChunk  # noqa: F401
+from src.storage_indexing.models.folder_batch import FolderBatch  # noqa: F401
+from src.storage_indexing.models.image_reference import ImageReference  # noqa: F401
+from src.storage_indexing.models.markdown_metadata import MarkdownMetadata  # noqa: F401
 from src.storage_indexing.models.permission import Permission  # noqa: F401
 from src.storage_indexing.models.processing_job import ProcessingJob  # noqa: F401
 from src.storage_indexing.models.tenant import Tenant  # noqa: F401
+from src.storage_indexing.models.upload_session import UploadSession  # noqa: F401
 from src.storage_indexing.models.user import User  # noqa: F401
 
 # this is the Alembic Config object

@@ -4,6 +4,7 @@ import structlog
 
 from src.ingestion_parsing.parsers.base import BaseParser
 from src.ingestion_parsing.parsers.docx_parser import DOCXParser
+from src.ingestion_parsing.parsers.markdown_parser import MarkdownParser
 from src.ingestion_parsing.parsers.pdf_parser import PDFParser
 from src.ingestion_parsing.parsers.txt_parser import TXTParser
 
@@ -23,6 +24,8 @@ class ParserFactory:
         "application/pdf": PDFParser,
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": DOCXParser,
         "text/plain": TXTParser,
+        "text/markdown": MarkdownParser,  # Added T022
+        "text/x-markdown": MarkdownParser,  # Legacy MIME type support
     }
 
     @classmethod

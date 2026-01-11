@@ -21,6 +21,10 @@ class ParsingResult(BaseModel):
     has_tables: bool = Field(default=False, description="Whether document contains tables")
     has_images: bool = Field(default=False, description="Whether document contains images")
     sections: list[str] = Field(default_factory=list, description="Section headings")
+    structural_elements: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Structural elements (headings, code blocks, lists, tables)",
+    )
     
     class Config:
         """Pydantic configuration."""

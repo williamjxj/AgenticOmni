@@ -1,0 +1,478 @@
+# Dramatiq Task Contracts: Markdown Processing
+#
+# This document specifies the message schemas and event contracts for async markdown processing
+# tasks using Dramatiq task queue. These are internal system events, not REST API endpoints.
+
+version: 1.0.0
+description: |
+  Async task definitions for markdown document parsing, folder batch processing,
+  and image reference handling. Tasks are executed via Dramatiq with Redis broker.
+
+tasks:
+  parse_markdown_document:
+    description: |
+      Parse a single markdown document, extract metadata, chunk content, and generate embeddings.
+      This is the primary parsing task, executed asynchronously after document upload.
+    queue: default
+    max_retries: 3
+    retry_delay_ms: 5000
+    timeout_seconds: 300
+    
+    input_schema:
+      type: object
+      required:
+        - document_id
+        - file_path
+        - tenant_id
+      properties:
+        document_id:
+          type: integer
+          format: int64
+          description: Document ID to parse
+          example: 1001
+        file_path:
+          type: string
+          description: Absolute path to markdown file on disk
+          example: "/uploads/tenant_1/doc_1001.md"
+        tenant_id:
+          type: integer
+          format: int64
+          description: Tenant ID for quota/isolation
+          example: 1
+        options:
+          type: object
+          description: Parsing options
+          properties:
+            extract_images:
+              type: boolean
+              default: true
+              description: Extract image references
+            process_mermaid:
+              type: boolean
+              default: true
+              description: Detect Mermaid diagrams
+            chunk_immediately:
+              type: boolean
+              default: true
+              description: Chunk content for RAG
+    
+    output_schema:
+      type: object
+      required:
+        - document_id
+        - status
+        - chunks_created
+      properties:
+        document_id:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [completed, failed]
+        text_content:
+          type: string
+          description: Extracted plaintext content
+        chunks_created:
+          type: integer
+          description: Number of chunks generated
+        metadata:
+          type: object
+          description: Extracted markdown metadata
+          properties:
+            frontmatter:
+              type: object
+            heading_count:
+              type: integer
+            code_block_count:
+              type: integer
+            mermaid_diagram_count:
+              type: integer
+            table_count:
+              type: integer
+            image_count:
+              type: integer
+        error_message:
+          type: string
+          description: Error details if status=failed
+        processing_time_ms:
+          type: integer
+          description: Total processing time in milliseconds
+    
+    emits:
+      - event: document.parsing.started
+        payload:
+          document_id: integer
+          started_at: timestamp
+      
+      - event: document.parsing.completed
+        payload:
+          document_id: integer
+          chunks_created: integer
+          completed_at: timestamp
+      
+      - event: document.parsing.failed
+        payload:
+          document_id: integer
+          error_message: string
+          failed_at: timestamp
+    
+    error_handling:
+      - error: FileNotFoundError
+        action: fail_permanently
+        message: "Document file not found at specified path"
+      
+      - error: UnicodeDecodeError
+        action: fail_permanently
+        message: "File encoding not valid UTF-8"
+      
+      - error: QuotaExceededError
+        action: fail_permanently
+        message: "Tenant storage quota exceeded"
+      
+      - error: ParsingError
+        action: retry
+        message: "Temporary parsing error, will retry"
+      
+      - error: DatabaseError
+        action: retry
+        message: "Database connection issue, will retry"
+
+  process_folder_batch:
+    description: |
+      Orchestrate processing of a folder batch by discovering markdown files
+      and queueing individual parse_markdown_document tasks.
+    queue: default
+    max_retries: 2
+    retry_delay_ms: 10000
+    timeout_seconds: 600
+    
+    input_schema:
+      type: object
+      required:
+        - batch_id
+        - folder_path
+        - tenant_id
+      properties:
+        batch_id:
+          type: integer
+          format: int64
+          description: FolderBatch ID
+          example: 123
+        folder_path:
+          type: string
+          description: Absolute path to uploaded folder
+          example: "/uploads/tenant_1/batch_123/"
+        tenant_id:
+          type: integer
+          format: int64
+          example: 1
+        options:
+          type: object
+          properties:
+            max_depth:
+              type: integer
+              default: 20
+              description: Maximum folder recursion depth
+            max_files:
+              type: integer
+              default: 500
+              description: Maximum files to process
+            follow_symlinks:
+              type: boolean
+              default: true
+              description: Follow symbolic links (with cycle detection)
+    
+    output_schema:
+      type: object
+      required:
+        - batch_id
+        - status
+        - files_discovered
+        - documents_created
+      properties:
+        batch_id:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [completed, partial_failure, failed]
+        files_discovered:
+          type: integer
+          description: Total markdown files found
+        documents_created:
+          type: integer
+          description: Document records created
+        parsing_tasks_queued:
+          type: integer
+          description: Number of parse tasks queued
+        discovery_time_ms:
+          type: integer
+          description: Folder traversal time
+        error_message:
+          type: string
+          description: Error details if failed
+    
+    emits:
+      - event: folder_batch.discovery.started
+        payload:
+          batch_id: integer
+          folder_path: string
+          started_at: timestamp
+      
+      - event: folder_batch.discovery.completed
+        payload:
+          batch_id: integer
+          files_discovered: integer
+          completed_at: timestamp
+      
+      - event: folder_batch.processing.started
+        payload:
+          batch_id: integer
+          total_files: integer
+          started_at: timestamp
+      
+      - event: folder_batch.processing.completed
+        payload:
+          batch_id: integer
+          files_processed: integer
+          files_failed: integer
+          completed_at: timestamp
+    
+    workflow:
+      - step: discover_files
+        description: Recursively find all .md files in folder
+        updates:
+          - FolderBatch.status = 'discovering'
+          - FolderBatch.total_files_discovered = count
+      
+      - step: create_documents
+        description: Create Document records for each file
+        updates:
+          - Document records created with status='pending'
+          - Document.folder_batch_id = batch_id
+      
+      - step: queue_parsing_tasks
+        description: Queue parse_markdown_document for each file
+        updates:
+          - FolderBatch.status = 'processing'
+          - parse_markdown_document tasks sent to queue
+      
+      - step: finalize_batch
+        description: Wait for all parsing tasks, update batch status
+        triggers_on: all_parsing_tasks_complete
+        updates:
+          - FolderBatch.status = 'completed' | 'partial_failure' | 'failed'
+          - FolderBatch.completed_at = now()
+
+  update_folder_batch_progress:
+    description: |
+      Update folder batch progress counters when individual document parsing completes.
+      Called by parse_markdown_document on completion/failure.
+    queue: default
+    max_retries: 5
+    retry_delay_ms: 2000
+    timeout_seconds: 30
+    
+    input_schema:
+      type: object
+      required:
+        - batch_id
+        - document_id
+        - status
+      properties:
+        batch_id:
+          type: integer
+          format: int64
+        document_id:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [completed, failed]
+    
+    output_schema:
+      type: object
+      required:
+        - batch_id
+        - updated
+      properties:
+        batch_id:
+          type: integer
+          format: int64
+        updated:
+          type: boolean
+        new_progress:
+          type: object
+          properties:
+            files_processed:
+              type: integer
+            files_failed:
+              type: integer
+            progress_percentage:
+              type: number
+    
+    database_updates:
+      - table: folder_batches
+        operation: increment
+        fields:
+          - files_processed (if status=completed)
+          - files_failed (if status=failed)
+          - updated_at (always)
+      
+      - table: folder_batches
+        operation: update_status
+        conditions:
+          - if: files_processed + files_failed == total_files_discovered
+            then: status = 'completed' OR 'partial_failure'
+            set_completed_at: true
+
+  chunk_markdown_document:
+    description: |
+      Chunk parsed markdown content into RAG-optimized segments.
+      Usually called inline by parse_markdown_document, but can be queued separately.
+    queue: default
+    max_retries: 3
+    retry_delay_ms: 3000
+    timeout_seconds: 180
+    
+    input_schema:
+      type: object
+      required:
+        - document_id
+        - text_content
+      properties:
+        document_id:
+          type: integer
+          format: int64
+        text_content:
+          type: string
+          description: Parsed markdown as plaintext
+        options:
+          type: object
+          properties:
+            chunk_size_tokens:
+              type: integer
+              default: 512
+            chunk_overlap_tokens:
+              type: integer
+              default: 50
+            preserve_structure:
+              type: boolean
+              default: true
+              description: Respect heading boundaries when chunking
+    
+    output_schema:
+      type: object
+      required:
+        - document_id
+        - chunks_created
+      properties:
+        document_id:
+          type: integer
+          format: int64
+        chunks_created:
+          type: integer
+        chunks:
+          type: array
+          items:
+            type: object
+            properties:
+              chunk_id:
+                type: integer
+                format: int64
+              content:
+                type: string
+              token_count:
+                type: integer
+              chunk_index:
+                type: integer
+    
+    emits:
+      - event: document.chunking.completed
+        payload:
+          document_id: integer
+          chunks_created: integer
+          completed_at: timestamp
+
+event_bus:
+  broker: Redis
+  exchange: agenticomni.events
+  routing:
+    - pattern: "document.parsing.*"
+      consumers:
+        - update_folder_batch_progress (if document.folder_batch_id != null)
+        - analytics_service (for metrics)
+    
+    - pattern: "folder_batch.processing.completed"
+      consumers:
+        - notification_service (send user notification)
+        - analytics_service (track batch stats)
+
+monitoring:
+  metrics:
+    - name: markdown_parsing_duration_seconds
+      type: histogram
+      labels: [tenant_id, status]
+      description: Time to parse markdown document
+    
+    - name: folder_batch_size_files
+      type: histogram
+      labels: [tenant_id]
+      description: Number of files in folder batches
+    
+    - name: markdown_parsing_errors_total
+      type: counter
+      labels: [error_type, tenant_id]
+      description: Total parsing errors
+    
+    - name: active_parsing_tasks
+      type: gauge
+      description: Currently executing parsing tasks
+  
+  alerts:
+    - alert: HighMarkdownParsingFailureRate
+      condition: markdown_parsing_errors_total rate > 0.1
+      duration: 5m
+      severity: warning
+      message: "High markdown parsing failure rate detected"
+    
+    - alert: FolderBatchStuck
+      condition: folder_batch status=processing for > 30m
+      severity: warning
+      message: "Folder batch processing taking longer than expected"
+
+error_codes:
+  PARSE_001: "File not found"
+  PARSE_002: "Invalid UTF-8 encoding"
+  PARSE_003: "Malformed YAML frontmatter"
+  PARSE_004: "File exceeds size limit"
+  PARSE_005: "Quota exceeded"
+  PARSE_006: "Parsing timeout"
+  BATCH_001: "Folder path not found"
+  BATCH_002: "Too many files in folder"
+  BATCH_003: "Max depth exceeded"
+  BATCH_004: "Circular symlink detected"
+  CHUNK_001: "Content too large to chunk"
+  CHUNK_002: "Tokenization failed"
+
+retry_policies:
+  default:
+    max_retries: 3
+    retry_delay_ms: 5000
+    backoff_strategy: exponential
+    max_backoff_ms: 60000
+  
+  database_errors:
+    max_retries: 5
+    retry_delay_ms: 2000
+    backoff_strategy: exponential
+  
+  quota_errors:
+    max_retries: 0
+    fail_immediately: true
+
+dead_letter_queue:
+  enabled: true
+  queue_name: markdown_parsing_dlq
+  retention_days: 7
+  alert_on_messages: true

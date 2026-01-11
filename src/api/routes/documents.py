@@ -16,6 +16,13 @@ from src.api.dependencies import (
     get_quota_manager,
     get_upload_session_repository,
 )
+from src.storage_indexing.repositories.markdown_repository import (
+    ImageReferenceRepository,
+    MarkdownMetadataRepository,
+)
+from src.storage_indexing.repositories.folder_batch_repository import FolderBatchRepository
+from src.ingestion_parsing.services.folder_service import FolderService
+from src.ingestion_parsing.tasks.folder_tasks import trigger_folder_batch_processing
 from src.ingestion_parsing.models.upload_request import (
     BatchUploadResponse,
     BatchUploadResult,
@@ -82,6 +89,17 @@ async def upload_document(
         tenant_id=tenant_id,
         user_id=user_id,
     )
+    
+    # Determine MIME type, forcing text/markdown for .md files
+    detected_mime_type = file.content_type
+    filename_lower = (file.filename or "").lower()
+    if filename_lower.endswith((".md", ".markdown")):
+        detected_mime_type = "text/markdown"
+        logger.debug(
+            "Forced MIME type to text/markdown for markdown file",
+            filename=file.filename,
+            original_content_type=file.content_type,
+        )
     
     try:
         # Initialize upload service
@@ -719,3 +737,432 @@ async def cancel_resumable_upload(
             "message": "Upload session cancelled and cleaned up",
         }
     )
+
+
+@router.get(
+    "/{document_id}/markdown-metadata",
+    status_code=status.HTTP_200_OK,
+)
+async def get_markdown_metadata(
+    document_id: int,
+    request: Request,
+    document_repo: DocumentRepository = Depends(get_document_repository),
+) -> dict:
+    """Get markdown-specific metadata for a document.
+    
+    Returns frontmatter, structural counts, and other markdown-specific metadata.
+    
+    Args:
+        document_id: Document identifier
+        request: FastAPI request (for getting DB session)
+        document_repo: Document repository (injected)
+        
+    Returns:
+        Markdown metadata including frontmatter and counts
+        
+    Raises:
+        HTTPException 404: Document or metadata not found
+    """
+    # Get tenant_id from headers
+    tenant_id = int(request.headers.get("X-Tenant-ID", 0))
+    
+    # Get document
+    document = await document_repo.get_by_id(document_id, tenant_id)
+    if not document:
+        logger.warning(
+            "Document not found for metadata request",
+            document_id=document_id,
+            tenant_id=tenant_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+    
+    # Check if markdown metadata exists
+    if not document.markdown_metadata:
+        logger.warning(
+            "Markdown metadata not found",
+            document_id=document_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Markdown metadata not found for this document",
+        )
+    
+    metadata = document.markdown_metadata
+    
+    logger.info(
+        "Markdown metadata retrieved",
+        document_id=document_id,
+        has_frontmatter=metadata.has_yaml_frontmatter,
+    )
+    
+    return {
+        "document_id": document_id,
+        "frontmatter": metadata.frontmatter,
+        "heading_count": metadata.heading_count,
+        "code_block_count": metadata.code_block_count,
+        "mermaid_diagram_count": metadata.mermaid_diagram_count,
+        "table_count": metadata.table_count,
+        "link_count": metadata.link_count,
+        "image_count": metadata.image_count,
+        "link_urls": metadata.link_urls,
+        "has_yaml_frontmatter": metadata.has_yaml_frontmatter,
+        "created_at": metadata.created_at.isoformat() if metadata.created_at else None,
+    }
+
+
+@router.get(
+    "/{document_id}/images",
+    status_code=status.HTTP_200_OK,
+)
+async def get_document_images(
+    document_id: int,
+    request: Request,
+    image_type: str | None = Query(None, description="Filter by image type: local, base64, external"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    document_repo: DocumentRepository = Depends(get_document_repository),
+) -> dict:
+    """Get image references for a markdown document.
+    
+    Returns all images referenced in the markdown with their metadata.
+    Supports filtering by image type and pagination.
+    
+    Args:
+        document_id: Document identifier
+        request: FastAPI request (for getting DB session)
+        image_type: Optional filter by type (local, base64, external)
+        page: Page number for pagination
+        page_size: Items per page
+        document_repo: Document repository (injected)
+        
+    Returns:
+        List of image references with metadata
+        
+    Raises:
+        HTTPException 404: Document not found
+        HTTPException 400: Invalid image_type filter
+    """
+    # Get tenant_id from headers
+    tenant_id = int(request.headers.get("X-Tenant-ID", 0))
+    
+    # Validate image_type filter
+    if image_type and image_type not in ["local", "base64", "external"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image_type. Must be one of: local, base64, external",
+        )
+    
+    # Get document
+    document = await document_repo.get_by_id(document_id, tenant_id)
+    if not document:
+        logger.warning(
+            "Document not found for images request",
+            document_id=document_id,
+            tenant_id=tenant_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+    
+    # Get image references
+    images = document.image_references
+    
+    # Filter by type if specified
+    if image_type:
+        images = [img for img in images if img.image_type == image_type]
+    
+    # Sort by position
+    images = sorted(images, key=lambda img: img.position_in_document or 0)
+    
+    # Paginate
+    total_count = len(images)
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    paginated_images = images[start_idx:end_idx]
+    
+    logger.info(
+        "Document images retrieved",
+        document_id=document_id,
+        total_count=total_count,
+        page=page,
+        filtered_type=image_type,
+    )
+    
+    return {
+        "document_id": document_id,
+        "total_count": total_count,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": math.ceil(total_count / page_size) if total_count > 0 else 0,
+        "images": [
+            {
+                "id": img.id,
+                "image_url": img.image_url,
+                "alt_text": img.alt_text,
+                "image_type": img.image_type,
+                "is_local_path": img.is_local_path,
+                "is_base64": img.is_base64,
+                "is_external_url": img.is_external_url,
+                "resolved_path": img.resolved_path,
+                "file_size_bytes": img.file_size_bytes,
+                "ocr_pending": img.ocr_pending,
+                "ocr_completed_at": img.ocr_completed_at.isoformat() if img.ocr_completed_at else None,
+                "position_in_document": img.position_in_document,
+            }
+            for img in paginated_images
+        ],
+    }
+
+
+@router.post(
+    "/upload-folder",
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_folder(
+    request: Request,
+    folder_path: str = Form(..., description="Path to folder containing markdown files"),
+    tenant_id: int = Form(..., gt=0, description="Tenant ID"),
+    user_id: int | None = Form(None, gt=0, description="User ID"),
+) -> dict:
+    """Upload an entire folder of markdown files for batch processing.
+    
+    Recursively discovers all markdown files in the folder and processes them.
+    Returns a batch ID for tracking progress.
+    
+    Args:
+        request: FastAPI request
+        folder_path: Path to the folder to upload
+        tenant_id: Tenant identifier
+        user_id: User who initiated the upload
+        
+    Returns:
+        Batch information with batch_id and status_url
+        
+    Raises:
+        HTTPException 400: Invalid folder or no markdown files found
+        HTTPException 413: Too many files in folder
+    """
+    from pathlib import Path
+    
+    logger.info(
+        "Folder upload initiated",
+        folder_path=folder_path,
+        tenant_id=tenant_id,
+        user_id=user_id,
+    )
+    
+    try:
+        folder = Path(folder_path)
+        
+        if not folder.exists():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Folder not found: {folder_path}",
+            )
+        
+        if not folder.is_dir():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Path is not a directory: {folder_path}",
+            )
+        
+        # Discover markdown files
+        folder_service = FolderService()
+        markdown_files = await folder_service.discover_markdown_files(folder)
+        
+        # Check if any files found
+        if len(markdown_files) == 0:
+            logger.warning("No markdown files found in folder", folder_path=folder_path)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No markdown files found in folder",
+            )
+        
+        # Check max files limit
+        max_files = getattr(settings, "folder_max_files", 500)
+        if len(markdown_files) > max_files:
+            logger.warning(
+                "Too many files in folder",
+                folder_path=folder_path,
+                file_count=len(markdown_files),
+                max_files=max_files,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Folder contains too many files ({len(markdown_files)}). Maximum allowed: {max_files}",
+            )
+        
+        # Create FolderBatch record
+        async for db_session in get_db():
+            try:
+                batch_repo = FolderBatchRepository(db_session)
+                
+                batch = await folder_service.create_batch(
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                    folder_path=folder_path,
+                    original_folder_name=folder.name,
+                )
+                
+                db_session.add(batch)
+                await db_session.commit()
+                await db_session.refresh(batch)
+                
+                # Trigger async processing
+                trigger_folder_batch_processing(batch.id, tenant_id)
+                
+                logger.info(
+                    "Folder batch created and processing triggered",
+                    batch_id=batch.id,
+                    tenant_id=tenant_id,
+                    total_files=len(markdown_files),
+                )
+                
+                return {
+                    "batch_id": batch.id,
+                    "status_url": f"/api/v1/documents/folder-batches/{batch.id}",
+                    "folder_name": batch.original_folder_name,
+                    "total_files_discovered": len(markdown_files),
+                    "status": batch.status,
+                    "created_at": batch.created_at.isoformat() if batch.created_at else None,
+                }
+            
+            finally:
+                await db_session.close()
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            "Folder upload failed",
+            folder_path=folder_path,
+            error=str(e),
+            error_type=type(e).__name__,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Folder upload failed: {str(e)}",
+        )
+
+
+@router.get(
+    "/folder-batches/{batch_id}",
+    status_code=status.HTTP_200_OK,
+)
+async def get_folder_batch_status(
+    batch_id: int,
+    request: Request,
+    page: int = Query(1, ge=1, description="Page number for documents list"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+) -> dict:
+    """Get folder batch status and progress.
+    
+    Returns the current status of a folder batch upload, including
+    progress tracking and list of processed documents.
+    
+    Args:
+        batch_id: FolderBatch identifier
+        request: FastAPI request
+        page: Page number for pagination
+        page_size: Items per page
+        
+    Returns:
+        Batch status with progress information and documents list
+        
+    Raises:
+        HTTPException 404: Batch not found
+    """
+    tenant_id = int(request.headers.get("X-Tenant-ID", 0))
+    
+    async for db_session in get_db():
+        try:
+            batch_repo = FolderBatchRepository(db_session)
+            document_repo = DocumentRepository(db_session)
+            
+            # Get batch
+            batch = await batch_repo.get_by_id(batch_id, tenant_id)
+            if not batch:
+                logger.warning(
+                    "FolderBatch not found",
+                    batch_id=batch_id,
+                    tenant_id=tenant_id,
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Folder batch not found",
+                )
+            
+            # Get documents for this batch
+            from sqlalchemy import select
+            from src.storage_indexing.models.document import Document
+            
+            stmt = (
+                select(Document)
+                .where(Document.folder_batch_id == batch_id)
+                .where(Document.tenant_id == tenant_id)
+                .order_by(Document.created_at)
+            )
+            
+            result = await db_session.execute(stmt)
+            all_documents = list(result.scalars().all())
+            
+            # Paginate documents
+            total_documents = len(all_documents)
+            start_idx = (page - 1) * page_size
+            end_idx = start_idx + page_size
+            paginated_documents = all_documents[start_idx:end_idx]
+            
+            # Calculate estimated completion time (if still processing)
+            estimated_completion_seconds = None
+            if batch.status == "processing" and batch.files_processed > 0:
+                # Simple estimation: average 2 seconds per file
+                remaining_files = batch.total_files_discovered - batch.files_processed
+                estimated_completion_seconds = remaining_files * 2
+            
+            logger.info(
+                "Folder batch status retrieved",
+                batch_id=batch_id,
+                status=batch.status,
+                progress=batch.progress_percentage,
+            )
+            
+            return {
+                "batch_id": batch.id,
+                "status": batch.status,
+                "folder_name": batch.original_folder_name,
+                "folder_path": batch.folder_path,
+                "total_files_discovered": batch.total_files_discovered,
+                "files_processed": batch.files_processed,
+                "files_failed": batch.files_failed,
+                "progress_percentage": batch.progress_percentage,
+                "is_complete": batch.is_complete,
+                "error_message": batch.error_message,
+                "created_at": batch.created_at.isoformat() if batch.created_at else None,
+                "updated_at": batch.updated_at.isoformat() if batch.updated_at else None,
+                "completed_at": batch.completed_at.isoformat() if batch.completed_at else None,
+                "estimated_completion_seconds": estimated_completion_seconds,
+                "documents": {
+                    "total_count": total_documents,
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": math.ceil(total_documents / page_size) if total_documents > 0 else 0,
+                    "items": [
+                        {
+                            "document_id": doc.document_id,
+                            "filename": doc.filename,
+                            "relative_path": doc.original_filename,
+                            "status": doc.processing_status,
+                            "file_size": doc.file_size,
+                            "created_at": doc.created_at.isoformat() if doc.created_at else None,
+                        }
+                        for doc in paginated_documents
+                    ],
+                },
+            }
+        
+        finally:
+            await db_session.close()

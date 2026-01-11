@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import structlog
 
-from src.storage_indexing.models import ProcessingJob, ProcessingStatus
+from src.storage_indexing.models import ProcessingJob, JobStatus
 
 logger = structlog.get_logger(__name__)
 
@@ -40,6 +40,7 @@ class JobRepository:
         document_id: int,
         job_type: str,
         started_by: int | None = None,
+        tenant_id: int | None = None,
     ) -> ProcessingJob:
         """Create a new processing job.
         
@@ -47,14 +48,24 @@ class JobRepository:
             document_id: Document ID being processed
             job_type: Type of job (parsing, chunking, embedding, etc.)
             started_by: User ID who started the job
+            tenant_id: Tenant ID (optional, will be fetched from document if not provided)
             
         Returns:
             Created ProcessingJob instance
         """
+        # If tenant_id not provided, fetch it from the document
+        if tenant_id is None:
+            from sqlalchemy import select
+            from src.storage_indexing.models import Document
+            stmt = select(Document.tenant_id).where(Document.document_id == document_id)
+            result = await self.db.execute(stmt)
+            tenant_id = result.scalar_one()
+        
         job = ProcessingJob(
             document_id=document_id,
+            tenant_id=tenant_id,
             job_type=job_type,
-            status=ProcessingStatus.PENDING.value,
+            status=JobStatus.PENDING.value,
             started_by=started_by,
             progress_percent=0,
         )

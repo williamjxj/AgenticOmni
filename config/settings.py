@@ -238,7 +238,7 @@ class Settings(BaseSettings):
     )
 
     allowed_file_types: str = Field(
-        default="pdf,docx,txt",
+        default="pdf,docx,txt,md,markdown",
         description="Allowed file types for upload (comma-separated)",
     )
 
@@ -315,6 +315,45 @@ class Settings(BaseSettings):
         le=3600,
         description="Parsing timeout in seconds",
     )
+
+    # ========================================================================
+    # Markdown Ingestion Configuration (T008)
+    # ========================================================================
+    markdown_max_file_size_mb: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        description="Maximum markdown file size in MB",
+    )
+
+    folder_max_files: int = Field(
+        default=500,
+        ge=1,
+        le=5000,
+        description="Maximum number of files per folder upload",
+    )
+
+    folder_max_depth: int = Field(
+        default=20,
+        ge=1,
+        le=50,
+        description="Maximum folder depth for recursive traversal",
+    )
+
+    markdown_html_stripping_mode: str = Field(
+        default="strip",
+        description="HTML handling mode: strip or preserve",
+    )
+
+    @field_validator("markdown_html_stripping_mode")
+    @classmethod
+    def validate_html_mode(cls, v: str) -> str:
+        """Validate HTML stripping mode."""
+        allowed_modes = {"strip", "preserve"}
+        v_lower = v.lower()
+        if v_lower not in allowed_modes:
+            raise ValueError(f"markdown_html_stripping_mode must be one of {allowed_modes}, got {v}")
+        return v_lower
 
     # ========================================================================
     # LLM Configuration (DeepSeek, OpenAI, etc.)

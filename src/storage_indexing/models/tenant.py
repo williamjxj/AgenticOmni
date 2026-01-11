@@ -1,11 +1,14 @@
 """Tenant model for multi-tenancy support."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import JSON, BigInteger, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.storage_indexing.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from src.storage_indexing.models.folder_batch import FolderBatch
 
 
 class Tenant(Base, TimestampMixin):
@@ -74,6 +77,14 @@ class Tenant(Base, TimestampMixin):
         nullable=False,
         default=0,
         comment="Current storage usage in bytes",
+    )
+
+    # Relationships for markdown ingestion (T018)
+    folder_batches = relationship(
+        "FolderBatch",
+        back_populates="tenant",
+        cascade="all, delete-orphan",
+        lazy="dynamic"
     )
 
     def __repr__(self) -> str:

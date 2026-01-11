@@ -2,11 +2,15 @@
 
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.storage_indexing.models.base import Base, TenantScopedMixin, TimestampMixin
+
+if TYPE_CHECKING:
+    from src.storage_indexing.models.folder_batch import FolderBatch
 
 
 class UserRole(str, Enum):
@@ -89,6 +93,13 @@ class User(Base, TenantScopedMixin, TimestampMixin):
         nullable=False,
         default=True,
         comment="Account active status",
+    )
+
+    # Relationships for markdown ingestion (T018)
+    folder_batches = relationship(
+        "FolderBatch",
+        back_populates="user",
+        lazy="dynamic"
     )
 
     def __repr__(self) -> str:

@@ -95,6 +95,13 @@ export function FileUploader() {
     setFiles((prev) => prev.filter((f) => f.status !== 'success'));
   };
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    if (bytes < 1024) return `${bytes} Bytes`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Drop Zone */}
@@ -112,14 +119,14 @@ export function FileUploader() {
         <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
         <h3 className="text-lg font-semibold mb-2">Drop files here</h3>
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-          or click to browse (PDF, DOCX, TXT up to 50MB)
+          or click to browse (PDF, DOCX, TXT, Markdown up to 50MB)
         </p>
         <input
           type="file"
           id="file-input"
           className="hidden"
           multiple
-          accept=".pdf,.docx,.txt"
+          accept=".pdf,.docx,.txt,.md,.markdown"
           onChange={handleFileSelect}
         />
         <Button asChild>
@@ -159,7 +166,7 @@ export function FileUploader() {
                         {fileWithStatus.file.name}
                       </p>
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {(fileWithStatus.file.size / 1024 / 1024).toFixed(2)} MB
+                        {formatFileSize(fileWithStatus.file.size)}
                       </p>
                       {fileWithStatus.error && (
                         <p className="text-sm text-red-600 mt-1">

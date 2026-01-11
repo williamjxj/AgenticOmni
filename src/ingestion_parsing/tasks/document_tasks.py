@@ -10,6 +10,10 @@ from src.storage_indexing.database import get_db
 from src.storage_indexing.repositories.chunk_repository import ChunkRepository
 from src.storage_indexing.repositories.document_repository import DocumentRepository
 from src.storage_indexing.repositories.job_repository import JobRepository
+from src.storage_indexing.repositories.markdown_repository import (
+    ImageReferenceRepository,
+    MarkdownMetadataRepository,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -63,17 +67,61 @@ async def _parse_document_async(document_id: int) -> None:
             document_repo = DocumentRepository(db_session)
             chunk_repo = ChunkRepository(db_session)
             job_repo = JobRepository(db_session)
+            markdown_metadata_repo = MarkdownMetadataRepository(db_session)
+            image_reference_repo = ImageReferenceRepository(db_session)
             
             # Initialize parsing service
             parsing_service = ParsingService(
                 document_repo=document_repo,
                 chunk_repo=chunk_repo,
                 job_repo=job_repo,
+                markdown_metadata_repo=markdown_metadata_repo,
+                image_reference_repo=image_reference_repo,
             )
+            
+            # Get document to check if it's part of a folder batch
+            document = await document_repo.get_by_id(document_id, tenant_id=0)
             
             # Parse document (includes progress tracking)
             await parsing_service.parse_document(document_id)
             
+            # If part of folder batch, update progress
+            if document and document.folder_batch_id:
+                from src.ingestion_parsing.tasks.folder_tasks import (
+                    update_folder_batch_progress,
+                )
+                
+                # Get tenant_id from document
+                tenant_id = document.tenant_id
+                
+                # Update folder batch progress
+                update_folder_batch_progress.send(
+                    batch_id=document.folder_batch_id,
+                    tenant_id=tenant_id,
+                    processed=1,
+                    failed=0,
+                )
+            
+        except Exception as e:
+            # If parsing failed and part of folder batch, update failed count
+            try:
+                document = await document_repo.get_by_id(document_id, tenant_id=0)
+                if document and document.folder_batch_id:
+                    from src.ingestion_parsing.tasks.folder_tasks import (
+                        update_folder_batch_progress,
+                    )
+                    
+                    update_folder_batch_progress.send(
+                        batch_id=document.folder_batch_id,
+                        tenant_id=document.tenant_id,
+                        processed=0,
+                        failed=1,
+                    )
+            except Exception:
+                pass  # Don't fail the task if progress update fails
+            
+            raise e
+        
         finally:
             # Ensure session is closed
             await db_session.close()
