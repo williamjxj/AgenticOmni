@@ -4,6 +4,9 @@
 **Version**: 0.2.0  
 **License**: Proprietary
 
+> 🚀 **Quick Start**: See [QUICK_REFERENCE.md](QUICK_REFERENCE.md) for immediate setup  
+> 📖 **Next Steps Guide**: [docs/NEXT_STEPS_GUIDE.md](docs/NEXT_STEPS_GUIDE.md) - Upload → RAG → Search workflow
+
 ## 📄 Overview
 
 AgenticOmni is an enterprise-grade AI document intelligence platform built on an ETL-to-RAG pipeline architecture. The system transforms complex multi-format documents (PDF, DOCX, TXT) into searchable, intelligent knowledge bases powered by retrieval-augmented generation.

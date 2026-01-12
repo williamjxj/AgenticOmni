@@ -1,5 +1,7 @@
 """Document parsing orchestration service."""
 
+from pathlib import Path
+
 import structlog
 
 from src.ingestion_parsing.parsers.parser_factory import ParserFactory
@@ -104,7 +106,7 @@ class ParsingService:
             
             # Step 2: Extract text and metadata (50%)
             logger.info("Extracting text", document_id=document_id, storage_path=document.storage_path)
-            parsing_result = parser.parse(document.storage_path)
+            parsing_result = await parser.parse(Path(document.storage_path))
             
             if job:
                 await self.job_repo.update_status(

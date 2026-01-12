@@ -199,12 +199,14 @@ class DocumentRepository:
             content_hash: SHA-256 content hash
             
         Returns:
-            Existing Document instance or None
+            Existing Document instance or None (returns first match if multiple exist)
         """
         result = await self.db.execute(
-            select(Document).where(
+            select(Document)
+            .where(
                 Document.tenant_id == tenant_id,
                 Document.content_hash == content_hash,
             )
+            .limit(1)
         )
         return result.scalar_one_or_none()

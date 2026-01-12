@@ -61,8 +61,13 @@ async def _parse_document_async(document_id: int) -> None:
     Args:
         document_id: ID of document to parse
     """
-    # Ensure database is initialized
-    from src.storage_indexing.database import init_db
+    # Ensure database is initialized for this event loop
+    from src.storage_indexing.database import init_db, close_db
+    
+    # Close any existing connections from previous event loops
+    await close_db()
+    
+    # Initialize fresh database connection for this event loop
     init_db()
     
     # Get database session
@@ -89,6 +94,11 @@ async def _parse_document_async(document_id: int) -> None:
             
             # Parse document (includes progress tracking)
             await parsing_service.parse_document(document_id)
+            
+            # Trigger embedding generation after successful parsing
+            from src.ingestion_parsing.tasks.embedding_tasks import trigger_embedding_generation
+            trigger_embedding_generation(document_id)
+            logger.info("Triggered embedding generation", document_id=document_id)
             
             # If part of folder batch, update progress
             if document and document.folder_batch_id:

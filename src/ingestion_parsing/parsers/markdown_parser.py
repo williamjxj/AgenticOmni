@@ -40,7 +40,8 @@ class MarkdownParser(BaseParser):
 
     def __init__(self) -> None:
         """Initialize the MarkdownParser with GFM support."""
-        self.md = marko.Markdown(extensions=[gfm])
+        # Use GFM extension - it's a Markdown subclass, not a separate extension
+        self.md = gfm
 
     async def parse(self, file_path: Path) -> ParsingResult:
         """Parse a markdown file and return its content and metadata.

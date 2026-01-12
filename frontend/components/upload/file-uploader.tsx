@@ -70,8 +70,17 @@ export function FileUploader() {
         )
       );
     } catch (error) {
-      const errorMessage =
-        error instanceof ApiError ? error.message : 'Upload failed';
+      console.error('Upload error:', error);
+      
+      let errorMessage = 'Upload failed';
+      
+      if (error instanceof ApiError) {
+        errorMessage = `${error.message} (${error.statusCode})`;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
 
       setFiles((prev) =>
         prev.map((f, i) =>

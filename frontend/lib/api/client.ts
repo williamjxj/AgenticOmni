@@ -28,15 +28,26 @@ export class ApiClient {
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        error: { message: 'Unknown error occurred', type: 'unknown' }
-      }));
-      throw new ApiError(
-        response.status,
-        error.error?.type || 'unknown',
-        error.error?.message || `HTTP ${response.status}`
-      );
+      let errorMessage = `HTTP ${response.status}`;
+      let errorType = 'unknown';
+      
+      try {
+        const errorData = await response.json();
+        errorType = errorData.error?.type || errorData.detail?.type || 'unknown';
+        errorMessage = errorData.error?.message || errorData.detail || errorData.message || errorMessage;
+      } catch (e) {
+        // If JSON parsing fails, try text
+        try {
+          const errorText = await response.text();
+          if (errorText) errorMessage = errorText;
+        } catch {
+          // Keep default error message
+        }
+      }
+      
+      throw new ApiError(response.status, errorType, errorMessage);
     }
+    
     return response.json();
   }
 

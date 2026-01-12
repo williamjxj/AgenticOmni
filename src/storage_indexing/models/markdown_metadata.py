@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from src.storage_indexing.models.document import Document
 
 
-class MarkdownMetadata(Base, TimestampMixin):
+class MarkdownMetadata(Base):
     """MarkdownMetadata model for markdown-specific metadata.
     
     Attributes:
@@ -66,6 +66,10 @@ class MarkdownMetadata(Base, TimestampMixin):
     image_count: Mapped[int] = mapped_column(Integer, default=0)
     link_urls: Mapped[list[str] | None] = mapped_column(ARRAY(Text))
     has_yaml_frontmatter: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
     
     # Relationship
     document = relationship(
