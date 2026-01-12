@@ -201,7 +201,7 @@ pnpm-debug.log*
 
 # Upload directories (if storing files locally during development)
 uploads/
-temp_uploads/
+/tmp/
 
 # Generated documentation
 docs/_build/
@@ -227,3 +227,5 @@ secrets/
 
 # william
 docs/todo.md
+etc/
+.ruff_cache/

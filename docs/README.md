@@ -8,22 +8,26 @@
 ## 📚 Quick Navigation
 
 ### Implementation & Status
-- **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** - Complete implementation status and summary (v0.2.0, 387/387 tasks)
+- **[implementation.md](./implementation.md)** - Complete implementation status and summary (v0.2.0, 387/387 tasks)
 - **[CHANGELOG.md](./CHANGELOG.md)** - Version history and release notes
-- **[SERVERS_STATUS.md](./SERVERS_STATUS.md)** - Current server and service status
+- **[servers-status.md](./servers-status.md)** - Current server and service status
 
 ### Setup & Configuration
 - **[../README.md](../README.md)** - Main project README with quick start
-- **[ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)** - Complete environment variable reference
-- **[PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md)** - Production deployment checklist
+- **[quickstart.md](./quickstart.md)** - Quick start guide (2 minutes)
+- **[environment.md](./environment.md)** - Complete environment variable reference
+- **[production.md](./production.md)** - Production deployment checklist
 
 ### Feature-Specific Guides
-- **[MALWARE_SCANNING.md](./MALWARE_SCANNING.md)** - ClamAV integration and troubleshooting
-- **[FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)** - Next.js/React integration guide
+- **[malware-scanning.md](./malware-scanning.md)** - ClamAV integration and troubleshooting
+- **[frontend.md](./frontend.md)** - Frontend implementation and integration guide
+- **[markdown-workflow.md](./markdown-workflow.md)** - Markdown document workflow
+- **[ocr-completion.md](./ocr-completion.md)** - OCR MVP completion status
 
 ### Development Guidelines
-- **[VERSIONING.md](./VERSIONING.md)** - Documentation versioning and version control guide
+- **[versioning.md](./versioning.md)** - Documentation versioning and version control guide
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** - How to contribute to the project
+- **[next-steps.md](./next-steps.md)** - Next steps and future features
 
 ### Specifications
 - **[../specs/001-app-skeleton-init/](../specs/001-app-skeleton-init/)** - Application skeleton specification
@@ -39,14 +43,14 @@
 
 ### For New Developers
 1. Read the main **[README.md](../README.md)** for project overview
-2. Follow the **[quickstart guide](../specs/002-doc-upload-parsing/quickstart.md)**
-3. Review **[ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)** for setup
-4. Check **[FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)** for UI development
+2. Follow the **[quickstart guide](./quickstart.md)**
+3. Review **[environment.md](./environment.md)** for setup
+4. Check **[frontend.md](./frontend.md)** for UI development
 
 ### For Deployment
-1. Review **[PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md)**
-2. Configure environment variables from **[ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)**
-3. Check **[MALWARE_SCANNING.md](./MALWARE_SCANNING.md)** for ClamAV setup
+1. Review **[production.md](./production.md)**
+2. Configure environment variables from **[environment.md](./environment.md)**
+3. Check **[malware-scanning.md](./malware-scanning.md)** for ClamAV setup
 
 ### For Contributors
 1. Read **[CONTRIBUTING.md](./CONTRIBUTING.md)**
@@ -60,14 +64,19 @@
 ```
 docs/
 ├── README.md (this file)           # Documentation index
-├── IMPLEMENTATION_COMPLETE.md      # Full implementation report
 ├── CHANGELOG.md                    # Version history
-├── ENV_CONFIGURATION.md            # Environment setup
-├── FRONTEND_INTEGRATION.md         # Frontend development guide
-├── MALWARE_SCANNING.md             # Security features
-├── PRODUCTION_DEPLOY.md            # Deployment guide
-├── VERSION_CONTROL_SUMMARY.md      # Git workflow
-├── VERSIONING_GUIDE.md             # Documentation standards
+├── CONTRIBUTING.md                 # Contribution guidelines
+├── implementation.md               # Full implementation report
+├── environment.md                  # Environment setup
+├── frontend.md                     # Frontend development guide
+├── malware-scanning.md             # Security features
+├── markdown-workflow.md            # Markdown workflow guide
+├── next-steps.md                   # Next steps and roadmap
+├── ocr-completion.md               # OCR MVP completion
+├── production.md                   # Deployment guide
+├── quickstart.md                   # Quick start guide
+├── servers-status.md               # Server status
+├── versioning.md                   # Documentation standards
 └── templates/                      # Document templates
     ├── ADR_TEMPLATE.md
     └── DOCUMENT_TEMPLATE.md
@@ -78,26 +87,26 @@ docs/
 ## 🔍 Find Documentation By Topic
 
 ### Architecture & Design
-- System Architecture → [IMPLEMENTATION.md](./IMPLEMENTATION.md)
+- System Architecture → [implementation.md](./implementation.md)
 - Database Schema → [../specs/002-doc-upload-parsing/data-model.md](../specs/002-doc-upload-parsing/data-model.md)
 - API Contracts → [../specs/002-doc-upload-parsing/contracts/](../specs/002-doc-upload-parsing/contracts/)
 
 ### Features & APIs
-- Document Upload → [IMPLEMENTATION.md](./IMPLEMENTATION.md#document-upload)
-- Document Parsing → [IMPLEMENTATION.md](./IMPLEMENTATION.md#multi-format-parsing-complete)
-- Malware Scanning → [MALWARE_SCANNING.md](./MALWARE_SCANNING.md)
-- Progress Tracking → [IMPLEMENTATION.md](./IMPLEMENTATION.md#processing-pipeline-complete)
+- Document Upload → [implementation.md](./implementation.md#document-upload)
+- Document Parsing → [implementation.md](./implementation.md#multi-format-parsing-complete)
+- Malware Scanning → [malware-scanning.md](./malware-scanning.md)
+- Progress Tracking → [implementation.md](./implementation.md#processing-pipeline-complete)
 
 ### Development
-- Setup & Installation → [../README.md](../README.md), [quickstart.md](../specs/002-doc-upload-parsing/quickstart.md)
-- Environment Config → [ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)
-- Frontend Development → [FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)
-- Versioning & Git → [VERSIONING.md](./VERSIONING.md)
+- Setup & Installation → [../README.md](../README.md), [quickstart.md](./quickstart.md)
+- Environment Config → [environment.md](./environment.md)
+- Frontend Development → [frontend.md](./frontend.md)
+- Versioning & Git → [versioning.md](./versioning.md)
 
 ### Deployment & Operations
-- Production Deployment → [PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md)
-- Server Status → [SERVERS_STATUS.md](./SERVERS_STATUS.md)
-- Monitoring → [IMPLEMENTATION.md](./IMPLEMENTATION.md#monitoring--metrics-complete)
+- Production Deployment → [production.md](./production.md)
+- Server Status → [servers-status.md](./servers-status.md)
+- Monitoring → [implementation.md](./implementation.md#monitoring--metrics-complete)
 
 ---
 
@@ -119,7 +128,7 @@ docs/
 
 ### Versioning
 - All major documents follow [Semantic Versioning](https://semver.org/)
-- See [VERSIONING_GUIDE.md](./VERSIONING_GUIDE.md) for details
+- See [versioning.md](./versioning.md) for details
 - Update [CHANGELOG.md](./CHANGELOG.md) with all changes
 
 ---
@@ -138,8 +147,8 @@ Found an error? Want to improve documentation?
 ## 📞 Support
 
 - **Documentation Issues**: Create GitHub issue with `docs` label
-- **Technical Questions**: Check [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)
-- **Setup Problems**: Review [ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)
+- **Technical Questions**: Check [implementation.md](./implementation.md)
+- **Setup Problems**: Review [environment.md](./environment.md)
 
 ---
 

@@ -1,316 +1,203 @@
-# Quick Start Guide - Running the Application
+# Quick Start Guide
 
-**Last Updated**: 2026-01-11
+**Last Updated**: 2026-01-12  
+**Status**: ✅ Ready for Development
 
-This guide will help you start both the backend API server and the frontend.
+This guide will help you get the AgenticOmni application up and running in minutes.
 
 ---
 
 ## 🚀 Quick Start (2 Minutes)
 
-### Terminal 1: Start Backend API
+### Prerequisites Check
 
 ```bash
-# Navigate to project root
+# Check required services
+docker-compose ps                    # PostgreSQL, Redis should be running
+ollama list                          # Ollama with nomic-embed-text:latest
+python --version                     # Python 3.12+
+node --version                       # Node.js 18+
+```
+
+### Start Services
+
+**Terminal 1 - Backend API:**
+```bash
 cd /Users/william.jiang/my-apps/ai-edocuments
-
-# Activate virtual environment (if not already active)
 source venv/bin/activate
-
-# Start the FastAPI server
 ./scripts/run_dev.sh
 ```
 
-**Expected Output**:
-```
-=======================================================================
-AgenticOmni Development Server
-=======================================================================
-
-Starting FastAPI server...
-  - Host: 0.0.0.0
-  - Port: 8000
-  - Environment: development
-  - Log Level: INFO
-
-📚 API Documentation: http://localhost:8000/api/v1/docs
-🔍 ReDoc: http://localhost:8000/api/v1/redoc
-
-Press Ctrl+C to stop the server
-=======================================================================
-
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process
-INFO:     Started server process
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-```
-
-### Terminal 2: Start Frontend
-
+**Terminal 2 - Frontend:**
 ```bash
-# Open a NEW terminal window/tab
-
-# Navigate to frontend directory
 cd /Users/william.jiang/my-apps/ai-edocuments/frontend
-
-# Install dependencies (first time only)
-npm install
-
-# Start Next.js development server
 npm run dev
 ```
 
-**Expected Output**:
-```
-   ▲ Next.js 16.1.1
-   - Local:        http://localhost:3000
-   - Environments: .env.local
-
- ✓ Starting...
- ✓ Ready in 2.1s
+**Terminal 3 - Ollama (for embeddings):**
+```bash
+ollama serve                         # Start Ollama server
+ollama pull nomic-embed-text:latest  # Pull embedding model (first time)
 ```
 
-### Access the Application
+### Access Points
 
-- **Frontend**: http://localhost:3000
-- **Backend API Docs**: http://localhost:8000/api/v1/docs
-- **Health Check**: http://localhost:8000/api/v1/health
+| Service | URL | Purpose |
+|---------|-----|---------|
+| **Frontend** | http://localhost:3000 | Main application |
+| **Upload Page** | http://localhost:3000/upload | Upload documents |
+| **Search Page** | http://localhost:3000/search | Semantic search |
+| **Documents** | http://localhost:3000/documents | View all documents |
+| **API Docs** | http://localhost:8000/api/v1/docs | Swagger UI |
+| **Health Check** | http://localhost:8000/api/v1/health | API status |
 
 ---
 
-## 📋 Prerequisites
-
-Before starting, ensure you have:
-
-### Required Services
-
-1. **PostgreSQL Database** (running)
-   ```bash
-   # Check if PostgreSQL is running
-   pg_isready
-   
-   # If not running, start it (macOS with Homebrew)
-   brew services start postgresql@14
-   ```
-
-2. **Redis** (running)
-   ```bash
-   # Check if Redis is running
-   redis-cli ping
-   # Should return: PONG
-   
-   # If not running, start it
-   brew services start redis
-   ```
-
-### Python Environment
+## ⚡ Quick Commands
 
 ```bash
-# Check Python version (should be 3.12+)
-python --version
+# Database Management
+./scripts/check_db_status.sh         # Check database status
+./scripts/reset_databases.sh         # Reset to clean state
 
-# Activate virtual environment
+# Embedding Generation
+source venv/bin/activate
+python scripts/generate_embeddings.py
+
+# Start All Services
+./scripts/start_all.sh               # Show startup instructions
+```
+
+---
+
+## 🎯 Complete Workflow
+
+### 1. Upload Markdown Files
+
+**Via Web UI:**
+1. Visit http://localhost:3000/upload
+2. Drag & drop `.md` or `.markdown` files
+3. Wait for processing (auto-redirects when complete)
+
+**Via API:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/documents/upload" \
+  -F "file=@your-document.md" \
+  -F "tenant_id=1" \
+  -F "user_id=1"
+```
+
+### 2. Generate Embeddings
+
+```bash
 cd /Users/william.jiang/my-apps/ai-edocuments
 source venv/bin/activate
+python scripts/generate_embeddings.py
 
-# Verify dependencies are installed
-pip list | grep fastapi
-pip list | grep sqlalchemy
+# Or filter by tenant
+python scripts/generate_embeddings.py --tenant-id 1
 ```
 
-### Node.js Environment
+### 3. Search Documents
 
+**Web UI:**
+- Visit http://localhost:3000/search
+- Enter your query
+- View ranked search results
+
+**API:**
 ```bash
-# Check Node.js version (should be 18+)
-node --version
-
-# Check npm
-npm --version
+curl "http://localhost:8000/api/v1/search?tenant_id=1&query=database+migration&limit=5"
 ```
 
 ---
 
-## 🔧 Detailed Setup (First Time)
+## 📋 First-Time Setup
 
-If this is your first time running the application, follow these steps:
-
-### 1. Database Setup
+### 1. Install Dependencies
 
 ```bash
 cd /Users/william.jiang/my-apps/ai-edocuments
 
-# Run database migrations
+# Python dependencies
+python -m venv venv
+source venv/bin/activate
+pip install -e .
+
+# Frontend dependencies
+cd frontend
+npm install
+cd ..
+```
+
+### 2. Start Docker Services
+
+```bash
+# Start PostgreSQL and Redis
+docker-compose up -d
+
+# Verify services
+docker-compose ps
+```
+
+### 3. Initialize Database
+
+```bash
+# Run migrations
 alembic upgrade head
 
 # Verify pgvector extension
 python scripts/verify_pgvector.py
 ```
 
-### 2. Download ML Models (Optional - for OCR)
+### 4. Configure Environment
 
 ```bash
-# Download embedding models (if using search)
-python scripts/download_models.py
+# Verify .env file exists
+cat .env | grep -E "DATABASE_URL|REDIS_URL|CORS_ORIGINS"
 ```
 
-### 3. Environment Variables
-
-The `.env` file already exists. Verify it has the necessary settings:
+### 5. Download ML Models
 
 ```bash
-# Check key settings
-cat .env | grep -E "DATABASE_URL|REDIS_URL|API_HOST|API_PORT"
-```
+# Install Ollama (macOS)
+brew install ollama
 
-**Key Variables**:
-```env
-# Database
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/agenticomni
-
-# Redis
-REDIS_URL=redis://localhost:6379/0
-
-# API Server
-API_HOST=0.0.0.0
-API_PORT=8000
-
-# Frontend (if needed)
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-### 4. Frontend Environment
-
-```bash
-cd frontend
-
-# Create .env.local (if needed)
-cat > .env.local << EOF
-NEXT_PUBLIC_API_URL=http://localhost:8000
-EOF
+# Pull embedding model
+ollama pull nomic-embed-text:latest
 ```
 
 ---
 
-## 🐳 Alternative: Using Docker Compose
+## ✅ Pre-Flight Checklist
 
-If you prefer Docker, you can start all services at once:
+- [ ] PostgreSQL running (port 5436)
+- [ ] Redis running (port 6380)
+- [ ] Ollama running (port 11434)
+- [ ] nomic-embed-text model pulled
+- [ ] Python venv activated
+- [ ] Dependencies installed
+- [ ] Migrations applied
+- [ ] .env file configured
+- [ ] Backend starts successfully
+- [ ] Frontend starts successfully
+
+---
+
+## 📊 Status Checks
 
 ```bash
-cd /Users/william.jiang/my-apps/ai-edocuments
-
-# Start all services (PostgreSQL, Redis, Backend, Frontend)
-docker-compose up -d
-
-# Check status
+# Docker services
 docker-compose ps
 
-# View logs
-docker-compose logs -f
+# Database status
+./scripts/check_db_status.sh
 
-# Stop all services
-docker-compose down
-```
-
-**Services with Docker**:
-- Backend API: http://localhost:8000
-- Frontend: http://localhost:3000
-- PostgreSQL: localhost:5432
-- Redis: localhost:6379
-
----
-
-## 🧪 Verify Everything Works
-
-### 1. Backend Health Check
-
-```bash
-# Using curl
+# API health
 curl http://localhost:8000/api/v1/health
 
-# Expected response:
-{
-  "status": "healthy",
-  "timestamp": "2026-01-11T...",
-  "database": "connected",
-  "redis": "connected"
-}
-```
-
-### 2. Frontend Access
-
-Open browser to http://localhost:3000
-
-**You should see**:
-- New customer-focused homepage
-- "Upload Documents" button
-- "Search Documents" button
-- Clean, modern UI
-
-### 3. API Documentation
-
-Open browser to http://localhost:8000/api/v1/docs
-
-**You should see**:
-- Swagger UI with all API endpoints
-- Try out endpoints interactively
-
----
-
-## 📝 Common Commands
-
-### Backend Server
-
-```bash
-# Start development server (with hot-reload)
-./scripts/run_dev.sh
-
-# Start production server
-uvicorn src.api.main:app --host 0.0.0.0 --port 8000
-
-# Run with specific log level
-uvicorn src.api.main:app --log-level debug
-
-# Run tests
-pytest tests/
-
-# Run specific test file
-pytest tests/unit/test_ocr_service.py -v
-```
-
-### Frontend
-
-```bash
-cd frontend
-
-# Development server (hot-reload)
-npm run dev
-
-# Production build
-npm run build
-npm run start
-
-# Linting
-npm run lint
-```
-
-### Database
-
-```bash
-# Apply migrations
-alembic upgrade head
-
-# Rollback last migration
-alembic downgrade -1
-
-# Create new migration
-alembic revision --autogenerate -m "description"
-
-# Check current version
-alembic current
-
-# View migration history
-alembic history
+# Ollama models
+curl http://localhost:11434/api/tags
 ```
 
 ---
@@ -319,179 +206,53 @@ alembic history
 
 ### Backend Won't Start
 
-**Problem**: `ModuleNotFoundError`
-```bash
-# Solution: Reinstall dependencies
-pip install -e .
-```
-
 **Problem**: Database connection error
 ```bash
-# Solution: Check PostgreSQL is running
-pg_isready
-brew services start postgresql@14
-
-# Verify database exists
-psql -l | grep agenticomni
-
-# Create database if missing
-createdb agenticomni
-```
-
-**Problem**: Redis connection error
-```bash
-# Solution: Start Redis
-brew services start redis
-
-# Verify Redis is running
-redis-cli ping
+# Check PostgreSQL is running
+docker-compose ps
+docker-compose logs postgres
 ```
 
 ### Frontend Won't Start
 
-**Problem**: `EADDRINUSE: address already in use`
+**Problem**: `EADDRINUSE`
 ```bash
-# Solution: Kill process on port 3000
+# Kill process on port 3000
 lsof -ti:3000 | xargs kill -9
-
-# Or use different port
-npm run dev -- -p 3001
 ```
 
-**Problem**: `Module not found`
-```bash
-# Solution: Reinstall dependencies
-rm -rf node_modules package-lock.json
-npm install
-```
+### Upload Fails
 
-**Problem**: API calls failing (CORS error)
-```bash
-# Solution: Verify backend is running
-curl http://localhost:8000/api/v1/health
+- Check file extension is `.md` or `.markdown`
+- Verify file size < 100MB
+- Check backend logs
 
-# Check frontend .env.local
-cat frontend/.env.local
-# Should have: NEXT_PUBLIC_API_URL=http://localhost:8000
-```
+### Search Returns Nothing
 
-### Database Migrations
-
-**Problem**: Migration fails
-```bash
-# Solution: Check current version
-alembic current
-
-# Rollback and retry
-alembic downgrade -1
-alembic upgrade head
-
-# If stuck, reset migrations (⚠️ DESTROYS DATA)
-alembic downgrade base
-alembic upgrade head
-```
+- Run: `python scripts/generate_embeddings.py`
+- Verify Ollama is running
+- Check embeddings exist
 
 ---
 
-## 📊 Port Usage
+## 🎯 What Works Now
 
-| Service | Port | URL |
-|---------|------|-----|
-| Frontend | 3000 | http://localhost:3000 |
-| Backend API | 8000 | http://localhost:8000 |
-| PostgreSQL | 5432 | localhost:5432 |
-| Redis | 6379 | localhost:6379 |
-| API Docs | 8000 | http://localhost:8000/api/v1/docs |
-
----
-
-## 🎯 Typical Development Workflow
-
-### Daily Startup
-
-1. **Terminal 1**: Start backend
-   ```bash
-   cd /Users/william.jiang/my-apps/ai-edocuments
-   source venv/bin/activate
-   ./scripts/run_dev.sh
-   ```
-
-2. **Terminal 2**: Start frontend
-   ```bash
-   cd /Users/william.jiang/my-apps/ai-edocuments/frontend
-   npm run dev
-   ```
-
-3. **Browser**: Open http://localhost:3000
-
-### Making Changes
-
-- **Backend changes**: Server auto-reloads (FastAPI's `--reload` flag)
-- **Frontend changes**: Page auto-refreshes (Next.js hot-reload)
-- **Database changes**: Run `alembic revision --autogenerate`, then `alembic upgrade head`
-
-### Before Committing
-
-```bash
-# Format code
-ruff format src/ tests/
-
-# Lint
-ruff check src/ tests/
-
-# Run tests
-pytest tests/
-
-# Frontend lint
-cd frontend && npm run lint
-```
-
----
-
-## 🚀 Production Deployment
-
-For production, see:
-- `docs/PRODUCTION_DEPLOY.md` - Full deployment guide
-- `docker-compose.yml` - Docker configuration
-- `.env.example` - Environment variable template
-
-**Quick production start**:
-```bash
-# Build and start with Docker
-docker-compose -f docker-compose.prod.yml up -d
-
-# Or use uvicorn without reload
-uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 4
-```
+| Feature | Status |
+|---------|--------|
+| Upload Markdown | ✅ Working |
+| Parse & Chunk | ✅ Automatic |
+| Generate Embeddings | ⚠️ Manual script |
+| Semantic Search | ✅ Working |
+| View Documents | ✅ Working |
 
 ---
 
 ## 📞 Need Help?
 
-- **API Issues**: Check http://localhost:8000/api/v1/docs
-- **Database Issues**: Check `docs/ENV_CONFIGURATION.md`
-- **Markdown Workflow**: See `docs/MARKDOWN_WORKFLOW_GUIDE.md`
-- **OCR Setup**: See `docs/OCR_MVP_COMPLETION.md`
-
----
-
-## ✅ Quick Checklist
-
-Before starting development:
-
-- [ ] PostgreSQL running (`pg_isready`)
-- [ ] Redis running (`redis-cli ping`)
-- [ ] Python venv activated (`which python`)
-- [ ] Dependencies installed (`pip list | grep fastapi`)
-- [ ] Migrations applied (`alembic current`)
-- [ ] .env file exists and configured
-- [ ] Backend starts successfully (http://localhost:8000/api/v1/health)
-- [ ] Frontend starts successfully (http://localhost:3000)
+- **Setup Issues**: See [environment.md](./environment.md)
+- **Implementation**: See [implementation.md](./implementation.md)
+- **Production**: See [production.md](./production.md)
 
 ---
 
 **Status**: Ready to develop! 🎉
-
-Both services should now be running:
-- **Backend**: http://localhost:8000
-- **Frontend**: http://localhost:3000
