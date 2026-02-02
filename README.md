@@ -4,8 +4,8 @@
 **Version**: 0.2.0  
 **License**: Proprietary
 
-> 🚀 **Quick Start**: See [QUICK_REFERENCE.md](QUICK_REFERENCE.md) for immediate setup  
-> 📖 **Next Steps Guide**: [docs/NEXT_STEPS_GUIDE.md](docs/NEXT_STEPS_GUIDE.md) - Upload → RAG → Search workflow
+> 🚀 **Quick Start**: See [docs/QUICKSTART.md](docs/QUICKSTART.md) for immediate setup  
+> 📖 **Next Steps Guide**: [docs/next-steps.md](docs/next-steps.md) - Upload → RAG → Search workflow
 
 ## 📄 Overview
 
@@ -40,6 +40,15 @@ AgenticOmni is an enterprise-grade AI document intelligence platform built on an
 - **Enterprise Security**: Multi-tenant isolation with per-tenant storage quotas
 - **Production-Ready**: Async FastAPI backend, PostgreSQL + pgvector, Docker environment
 - **Modern Frontend**: Next.js 14 with React, TypeScript, Tailwind CSS, and shadcn/ui components
+
+### App Preview
+
+| | |
+|:-------------------------:|:-------------------------:|
+| ![Upload](assets/1.png) | ![Documents](assets/2.png) |
+| **Upload** – Drag-and-drop upload, batch support | **Documents** – List and manage ingested documents |
+| ![Search](assets/3.png) | ![Overview](assets/4.png) |
+| **Search** – Semantic search over embedded content | **Overview** – Dashboard and workflow |
 
 ## 🏗️ Architecture
 
@@ -213,7 +222,7 @@ cd agenticomni
 cp .env.example .env
 # Edit .env with your configuration (see Configuration section below)
 
-# 3. Start services (PostgreSQL + Redis)
+# 3. Start services (PostgreSQL + Redis; ClamAV is optional, see docker-compose)
 docker-compose up -d
 
 # 4. Set up Python environment
@@ -300,16 +309,16 @@ See `.env.example` for complete configuration options with documentation.
 All documentation follows [Semantic Versioning](https://semver.org/) with change tracking in [CHANGELOG.md](./docs/CHANGELOG.md).
 
 - **[Documentation Index](./docs/README.md)** - Complete documentation catalog and navigation
-- **[Implementation](./docs/IMPLEMENTATION.md)** v0.2.0 - Complete implementation status and summary (387/387 tasks)
+- **[Implementation](./docs/implementation.md)** v0.2.0 - Complete implementation status and summary (387/387 tasks)
 - **[CHANGELOG](./docs/CHANGELOG.md)** - Version history and release notes
 
 ### 🎯 Setup & Configuration Guides
 
 - **[Quickstart Guide](./specs/002-doc-upload-parsing/quickstart.md)** - 10-step setup instructions
-- **[Environment Configuration](./docs/ENV_CONFIGURATION.md)** - Complete environment variable reference
-- **[Frontend Integration](./docs/FRONTEND_INTEGRATION.md)** - Next.js/React integration guide
-- **[Malware Scanning](./docs/MALWARE_SCANNING.md)** - ClamAV setup and troubleshooting
-- **[Production Deploy](./docs/PRODUCTION_DEPLOY.md)** - Production deployment checklist
+- **[Environment Configuration](./docs/environment.md)** - Complete environment variable reference
+- **[Frontend Integration](./docs/frontend.md)** - Next.js/React integration guide
+- **[Malware Scanning](./docs/malware-scanning.md)** - ClamAV setup and troubleshooting
+- **[Production Deploy](./docs/production.md)** - Production deployment checklist
 
 ### 🏗️ Feature Specifications
 
@@ -405,7 +414,7 @@ alembic history
 ### Running Services
 
 ```bash
-# Start all services (PostgreSQL, Redis)
+# Start required services (PostgreSQL, Redis). ClamAV is optional (profile: clamav).
 docker-compose up -d
 
 # Stop all services
@@ -474,25 +483,13 @@ This is a private project. For internal contributors:
 
 ## 📊 Project Status
 
-### Current Phase: Application Skeleton ✅
+### Completed ✅
 
-- [x] Project structure and module organization
-- [x] Dependency management (pyproject.toml)
-- [x] Configuration management (Pydantic Settings)
-- [x] Database schema with 6 entities
-- [x] Alembic migrations setup
-- [x] FastAPI server with health check
-- [x] Docker development environment
-- [x] Testing framework (pytest)
-- [x] Frontend shell (Next.js)
-
-### Next Phase: Document Processing Pipeline
-
-- [ ] Docling integration for PDF/DOCX parsing
-- [ ] OCR engine integration (PaddleOCR or Tesseract)
-- [ ] Document upload and storage endpoints
-- [ ] Embedding generation pipeline
-- [ ] Vector similarity search implementation
+- [x] **Application Skeleton** – Project structure, FastAPI, PostgreSQL + pgvector, Redis, Next.js frontend
+- [x] **Document Upload & Parsing** – Multi-format (PDF, DOCX, TXT), batch upload, resumable upload, Dramatiq workers
+- [x] **Markdown Ingestion** – Markdown parsing, folder upload, Mermaid/frontmatter support
+- [x] **OCR & Embedding Pipeline** – OCR (PaddleOCR/Tesseract), chunking, embedding service, vector storage
+- [x] **View & Search** – Embedded docs UI, semantic search, document list and upload UI
 
 ### Future Phases
 

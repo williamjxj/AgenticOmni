@@ -2,8 +2,8 @@
 
 ## ✅ All Services Running
 
-**Date**: 2026-01-11  
-**Status**: All systems operational - Fresh database reset complete
+**Date**: 2026-02-02  
+**Status**: All systems operational
 
 ### Backend (FastAPI)
 - **URL**: http://localhost:8000
@@ -25,8 +25,12 @@
 - **Connection**: postgresql://agenti_user@localhost:5436/agenticomni
 
 ### Cache (Redis)
-- **Port**: 6380
+- **Port**: 6380 (host; container 6379)
 - **Status**: ✅ Running
+
+### ClamAV (optional)
+- **Port**: 3310
+- **Status**: Optional; use `docker-compose --profile clamav up -d` (no linux/arm64 image)
 
 ## ⚙️ Configuration Fixed
 

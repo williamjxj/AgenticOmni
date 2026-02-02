@@ -7,7 +7,7 @@ This document provides a comprehensive guide to all environment variables used i
 Copy this template to your `.env` file in the project root:
 
 ```bash
-cp docs/ENV_CONFIGURATION.md .env
+cp .env.example .env
 # Then edit .env with your actual values
 ```
 

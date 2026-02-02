@@ -29,7 +29,7 @@ AgenticOmni v0.2.0 is **100% complete** with all 387 tasks implemented across tw
 |---------|------|--------|-------------|
 | PostgreSQL | 5436 | ✅ Healthy | Database + pgvector |
 | Redis | 6380 | ✅ Healthy | Cache + Task Queue |
-| ClamAV | 3310 | ✅ Healthy | Malware Scanning (optional) |
+| ClamAV | 3310 | Optional (profile) | Malware scanning; no arm64 image, use `--profile clamav` on x86 |
 | Backend API | 8000 | ✅ Running | FastAPI Server |
 | Dramatiq Worker | - | ✅ Running | Background Jobs |
 | Frontend | 3000 | ✅ Running | Next.js App |
@@ -230,13 +230,13 @@ Execution Time: ~12 seconds
 
 **Comprehensive Guides (15 documents):**
 1. README.md - Project overview
-2. IMPLEMENTATION.md - This document
+2. implementation.md - This document
 3. CHANGELOG.md - Version history
-4. ENV_CONFIGURATION.md - Environment variables
-5. FRONTEND_INTEGRATION.md - React integration
-6. PRODUCTION_DEPLOY.md - Deployment checklist
-7. MALWARE_SCANNING.md - ClamAV setup
-8. quickstart.md - 10-step setup guide
+4. environment.md - Environment variables
+5. frontend.md - React/Next.js integration
+6. production.md - Deployment checklist
+7. malware-scanning.md - ClamAV setup
+8. QUICKSTART.md - Quick setup guide
 9. spec.md - Feature specification
 10. plan.md - Implementation plan
 11. research.md - Technology decisions
@@ -424,7 +424,7 @@ DEEPSEEK_TEMPERATURE=0.7
 DEEPSEEK_MAX_TOKENS=2000
 ```
 
-**Complete Reference**: See [ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md)
+**Complete Reference**: See [environment.md](./environment.md)
 
 ---
 
@@ -468,7 +468,7 @@ Execution Time: ~12 seconds
 ### Setup & Getting Started
 - [README.md](../README.md) - Project overview
 - [quickstart.md](../specs/002-doc-upload-parsing/quickstart.md) - 10-step setup
-- [ENV_CONFIGURATION.md](./ENV_CONFIGURATION.md) - Environment configuration
+- [environment.md](./environment.md) - Environment configuration
 
 ### Feature Documentation
 - [spec.md](../specs/002-doc-upload-parsing/spec.md) - Feature specification
@@ -477,8 +477,8 @@ Execution Time: ~12 seconds
 - [tasks.md](../specs/002-doc-upload-parsing/tasks.md) - 165 tasks breakdown
 
 ### Integration & Deployment
-- [FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md) - React/Next.js guide
-- [PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md) - Production deployment
+- [frontend.md](./frontend.md) - React/Next.js guide
+- [production.md](./production.md) - Production deployment
 - [MALWARE_SCANNING.md](./MALWARE_SCANNING.md) - ClamAV setup
 
 ### Development
@@ -509,7 +509,7 @@ Execution Time: ~12 seconds
 
 ### Deployment Checklist
 
-See [PRODUCTION_DEPLOY.md](./PRODUCTION_DEPLOY.md) for complete checklist.
+See [production.md](./production.md) for complete checklist.
 
 **Quick Steps:**
 1. ✅ Provision cloud infrastructure (AWS/GCP/Azure)

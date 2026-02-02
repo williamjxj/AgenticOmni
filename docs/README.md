@@ -1,6 +1,6 @@
 # AgenticOmni Documentation
 
-**Last Updated**: January 10, 2026  
+**Last Updated**: February 2, 2026  
 **Version**: 0.2.0
 
 ---
@@ -14,7 +14,7 @@
 
 ### Setup & Configuration
 - **[../README.md](../README.md)** - Main project README with quick start
-- **[quickstart.md](./quickstart.md)** - Quick start guide (2 minutes)
+- **[QUICKSTART.md](./QUICKSTART.md)** - Quick start guide
 - **[environment.md](./environment.md)** - Complete environment variable reference
 - **[production.md](./production.md)** - Production deployment checklist
 
@@ -43,7 +43,7 @@
 
 ### For New Developers
 1. Read the main **[README.md](../README.md)** for project overview
-2. Follow the **[quickstart guide](./quickstart.md)**
+2. Follow the **[quickstart guide](./QUICKSTART.md)**
 3. Review **[environment.md](./environment.md)** for setup
 4. Check **[frontend.md](./frontend.md)** for UI development
 
@@ -74,7 +74,7 @@ docs/
 ├── next-steps.md                   # Next steps and roadmap
 ├── ocr-completion.md               # OCR MVP completion
 ├── production.md                   # Deployment guide
-├── quickstart.md                   # Quick start guide
+├── QUICKSTART.md                   # Quick start guide
 ├── servers-status.md               # Server status
 ├── versioning.md                   # Documentation standards
 └── templates/                      # Document templates
@@ -98,7 +98,7 @@ docs/
 - Progress Tracking → [implementation.md](./implementation.md#processing-pipeline-complete)
 
 ### Development
-- Setup & Installation → [../README.md](../README.md), [quickstart.md](./quickstart.md)
+- Setup & Installation → [../README.md](../README.md), [QUICKSTART.md](./QUICKSTART.md)
 - Environment Config → [environment.md](./environment.md)
 - Frontend Development → [frontend.md](./frontend.md)
 - Versioning & Git → [versioning.md](./versioning.md)

@@ -1,5 +1,5 @@
-version: '3.9'
-
+# Postgres and Redis are required. ClamAV is optional (profile: clamav).
+# Note: clamav/clamav does not provide linux/arm64; use profile only on x86 or when arm64 image exists.
 services:
   postgres:
     image: ankane/pgvector:v0.5.1
@@ -43,6 +43,8 @@ services:
   clamav:
     image: clamav/clamav:latest
     container_name: agenticomni-clamav
+    profiles:
+      - clamav  # Optional: no linux/arm64 image; use only on x86 or when arm64 available
     ports:
       - "3310:3310"
     environment:
