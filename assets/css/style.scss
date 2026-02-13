@@ -1,0 +1,159 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+/* Custom styles for AgenticOmni documentation */
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.main-nav {
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+}
+
+.main-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.main-nav li {
+  margin: 0;
+}
+
+.main-nav a {
+  color: #4a5568;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  padding: 0.5rem 1rem;
+}
+
+.main-nav a:hover {
+  color: #667eea;
+}
+
+.doc-card {
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  border-radius: 8px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  background: #fff;
+}
+
+.doc-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.doc-card h3 {
+  margin-top: 0;
+  color: #2d3748;
+}
+
+.doc-card p {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.doc-card a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.doc-card a:hover {
+  text-decoration: underline;
+}
+
+.footer {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+/* Responsive tables */
+table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Code blocks */
+pre {
+  background: #1a202c;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+
+code {
+  background: #f7fafc;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+  color: #e53e3e;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  color: #e2e8f0;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
+  color: white !important;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background 0.2s;
+  border: 0;
+}
+
+.btn:hover {
+  background: #5a67d8;
+  color: white !important;
+  text-decoration: none;
+}
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #48bb78;
+  color: white;
+  border-radius: 3px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Alerts and callouts */
+blockquote {
+  border-left: 4px solid #667eea;
+  padding-left: 1rem;
+  color: #4a5568;
+  font-style: normal;
+  background: #f7fafc;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
