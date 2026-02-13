@@ -1,7 +1,9 @@
 ---
 layout: default
-title: Home
+title: AgenticOmni - AI-Powered Document Intelligence Platform
 ---
+
+{% include navigation.html %}
 
 # AgenticOmni: AI-Powered Document Intelligence Platform
 

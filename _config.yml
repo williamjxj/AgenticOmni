@@ -5,16 +5,16 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://williamjxj.github.io" # your GitHub Pages URL
 repository: williamjxj/AgenticOmni
 
-# Theme
-theme: jekyll-theme-cayman
-# Alternative themes you can use:
-# theme: jekyll-theme-minimal
-# theme: jekyll-theme-slate
-# theme: jekyll-theme-architect
-# remote_theme: pages-themes/cayman@v0.2.0
+# Theme - using remote_theme for better GitHub Pages compatibility
+remote_theme: pages-themes/cayman@v0.2.0
+# Alternative themes:
+# remote_theme: pages-themes/minimal@v0.2.0
+# remote_theme: pages-themes/slate@v0.2.0
+# remote_theme: pages-themes/architect@v0.2.0
 
 # Plugins
 plugins:
+  - jekyll-remote-theme
   - jekyll-relative-links
   - jekyll-optional-front-matter
   - jekyll-readme-index
