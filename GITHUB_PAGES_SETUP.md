@@ -6,6 +6,8 @@ This directory contains the configuration for the AgenticOmni documentation site
 
 Once deployed, your site will be available at: **https://williamjxj.github.io/AgenticOmni**
 
+Links to documentation pages will use `.html` extensions (e.g., `/docs/QUICKSTART.html`) for explicit HTML rendering.
+
 ## 📁 Files Overview
 
 - `_config.yml` - Jekyll configuration
@@ -45,6 +47,15 @@ git push origin main
 Visit: **https://williamjxj.github.io/AgenticOmni**
 
 ## 🎨 Customization
+
+### URL Structure
+
+This site is configured to use explicit `.html` extensions in URLs (e.g., `/docs/QUICKSTART.html` instead of `/docs/QUICKSTART`). This matches the behavior of your agentic-langgraph-accounting project.
+
+The configuration is set in `_config.yml`:
+```yaml
+permalink: /:path/:basename.html
+```
 
 ### Change Theme
 
@@ -112,11 +123,12 @@ Place images in the `assets/` folder and reference them in markdown:
 
 ### Linking Between Pages
 
-Use relative links in markdown:
+Use relative links with .html extensions in markdown:
 
 ```markdown
-[Quick Start](docs/QUICKSTART)
-[Configuration](docs/environment)
+[Quick Start](docs/QUICKSTART.html)
+[Configuration](docs/environment.html)
+[Home](index.html)
 ```
 
 ## 🔧 Troubleshooting

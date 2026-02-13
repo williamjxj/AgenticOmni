@@ -17,19 +17,19 @@ title: Home
   <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
     <h3>📖 Quick Start</h3>
     <p>Get up and running in minutes</p>
-    <a href="docs/QUICKSTART">Get Started →</a>
+    <a href="docs/QUICKSTART.html">Get Started →</a>
   </div>
   
   <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
     <h3>📚 Documentation</h3>
     <p>Complete technical documentation</p>
-    <a href="docs/README">Browse Docs →</a>
+    <a href="docs/README.html">Browse Docs →</a>
   </div>
   
   <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
     <h3>⚙️ Configuration</h3>
     <p>Environment setup and configuration</p>
-    <a href="docs/environment">Setup Guide →</a>
+    <a href="docs/environment.html">Setup Guide →</a>
   </div>
   
   <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
@@ -114,23 +114,23 @@ AgenticOmni is an enterprise-grade AI document intelligence platform built on an
 ## 📖 Documentation
 
 ### Getting Started
-- [Quick Start Guide](docs/QUICKSTART) - Get started in 5 minutes
-- [Environment Setup](docs/environment) - Configuration reference
-- [Frontend Guide](docs/frontend) - Frontend development
+- [Quick Start Guide](docs/QUICKSTART.html) - Get started in 5 minutes
+- [Environment Setup](docs/environment.html) - Configuration reference
+- [Frontend Guide](docs/frontend.html) - Frontend development
 
 ### Implementation
-- [Implementation Status](docs/implementation) - Complete feature status
-- [Changelog](docs/CHANGELOG) - Version history
-- [Server Status](docs/servers-status) - Current service status
+- [Implementation Status](docs/implementation.html) - Complete feature status
+- [Changelog](docs/CHANGELOG.html) - Version history
+- [Server Status](docs/servers-status.html) - Current service status
 
 ### Features
-- [Malware Scanning](docs/malware-scanning) - ClamAV integration
-- [Production Deployment](docs/production) - Production checklist
-- [Next Steps](docs/next-steps) - Roadmap and future features
+- [Malware Scanning](docs/malware-scanning.html) - ClamAV integration
+- [Production Deployment](docs/production.html) - Production checklist
+- [Next Steps](docs/next-steps.html) - Roadmap and future features
 
 ### Development
-- [Contributing Guide](docs/CONTRIBUTING) - How to contribute
-- [Versioning](docs/versioning) - Version control guide
+- [Contributing Guide](docs/CONTRIBUTING.html) - How to contribute
+- [Versioning](docs/versioning.html) - Version control guide
 
 ---
 
@@ -179,7 +179,7 @@ AgenticOmni is an enterprise-grade AI document intelligence platform built on an
    - Backend API: http://localhost:8000
    - API Docs: http://localhost:8000/docs
 
-For detailed instructions, see the [Quick Start Guide](docs/QUICKSTART).
+For detailed instructions, see the [Quick Start Guide](docs/QUICKSTART.html).
 
 ---
 
@@ -199,7 +199,7 @@ We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING)
 
 For questions and issues:
 - Open an [issue](https://github.com/williamjxj/AgenticOmni/issues) on GitHub
-- Check our [documentation](docs/README)
+- Check our [documentation](docs/README.html)
 
 ---
 

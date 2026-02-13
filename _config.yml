@@ -39,6 +39,9 @@ titles_from_headings:
   strip_title: true
   collections: true
 
+# Permalink style - use .html extensions explicitly
+permalink: /:path/:basename.html
+
 # Markdown settings
 markdown: kramdown
 kramdown:
@@ -78,13 +81,13 @@ exclude:
 # Navigation (if using a theme that supports it)
 nav_links:
   - title: Home
-    url: /
+    url: /index.html
   - title: Quick Start
-    url: /docs/QUICKSTART
+    url: /docs/QUICKSTART.html
   - title: Documentation
-    url: /docs/README
+    url: /docs/README.html
   - title: API Reference
-    url: /docs/implementation
+    url: /docs/implementation.html
   - title: GitHub
     url: https://github.com/williamjxj/AgenticOmni
 
