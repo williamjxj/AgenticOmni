@@ -1,11 +1,17 @@
 # AgenticOmni Documentation
 
-**Last Updated**: February 2, 2026  
+**Last Updated**: February 13, 2026  
 **Version**: 0.2.0
+
+> 🌐 **Online Documentation**: Visit our [GitHub Pages site](https://williamjxj.github.io/AgenticOmni) for a better reading experience
 
 ---
 
 ## 📚 Quick Navigation
+
+### 🌐 Online Resources
+- **[GitHub Pages Site](https://williamjxj.github.io/AgenticOmni)** - Browse documentation online with enhanced navigation
+- **[GitHub Repository](https://github.com/williamjxj/AgenticOmni)** - Source code and issues
 
 ### Implementation & Status
 - **[implementation.md](./implementation.md)** - Complete implementation status and summary (v0.2.0, 387/387 tasks)
@@ -110,6 +116,22 @@ docs/
 
 ---
 
+## 🌐 GitHub Pages
+
+This documentation is also available as a GitHub Pages site for easier browsing:
+
+- **Live Site**: [https://williamjxj.github.io/AgenticOmni](https://williamjxj.github.io/AgenticOmni)
+- **Setup Guide**: [../GITHUB_PAGES_SETUP.md](../GITHUB_PAGES_SETUP.md)
+- **Auto-Deploy**: Automatically deployed via GitHub Actions on push to main branch
+
+### Benefits of GitHub Pages
+- 🎨 **Enhanced UI**: Professional theme with navigation
+- 🔍 **Better Search**: Easier to find documentation
+- 📱 **Mobile Friendly**: Responsive design for all devices
+- 🔗 **Shareable Links**: Easy to share specific documentation pages
+
+---
+
 ## 📝 Documentation Standards
 
 ### Writing Guidelines
@@ -153,4 +175,5 @@ Found an error? Want to improve documentation?
 ---
 
 **Maintained By**: AgenticOmni Development Team  
-**Project**: [AgenticOmni](https://github.com/williamjxj/AgenticOmni)
+**Project**: [AgenticOmni](https://github.com/williamjxj/AgenticOmni)  
+**Documentation**: [GitHub Pages](https://williamjxj.github.io/AgenticOmni)

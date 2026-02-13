@@ -9,6 +9,16 @@ and documentation versioning adheres to [Semantic Versioning](https://semver.org
 
 ## [Unreleased]
 
+### Added - 2026-02-13
+- **GitHub Pages Documentation Site**
+  - Live documentation site at https://williamjxj.github.io/AgenticOmni
+  - Jekyll-based static site with Cayman theme
+  - Automatic deployment via GitHub Actions
+  - Enhanced navigation and mobile-responsive design
+  - Setup guide in GITHUB_PAGES_SETUP.md
+  - Custom layout with professional styling
+  - SEO optimization with jekyll-seo-tag plugin
+
 ### Next Phase: RAG Orchestration
 - Vector embeddings generation
 - Semantic search implementation

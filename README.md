@@ -4,6 +4,7 @@
 **Version**: 0.2.0  
 **License**: Proprietary
 
+> 🌐 **Documentation Site**: [https://williamjxj.github.io/AgenticOmni](https://williamjxj.github.io/AgenticOmni)  
 > 🚀 **Quick Start**: See [docs/QUICKSTART.md](docs/QUICKSTART.md) for immediate setup  
 > 📖 **Next Steps Guide**: [docs/next-steps.md](docs/next-steps.md) - Upload → RAG → Search workflow
 
