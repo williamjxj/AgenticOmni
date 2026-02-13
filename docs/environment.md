@@ -217,6 +217,7 @@ python scripts/test_llm.py
 ## Security Best Practices
 
 ### ✅ DO:
+
 - Use strong, unique SECRET_KEY (min 32 characters)
 - Rotate API keys regularly
 - Use environment-specific configurations
@@ -224,6 +225,7 @@ python scripts/test_llm.py
 - Store secrets in secrets manager (AWS Secrets Manager, HashiCorp Vault)
 
 ### ❌ DON'T:
+
 - Commit .env files to version control
 - Share API keys in documentation/tickets
 - Use default passwords in production

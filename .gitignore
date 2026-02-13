@@ -207,6 +207,14 @@ uploads/
 docs/_build/
 site/
 
+# Jekyll / GitHub Pages
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+Gemfile.lock
+vendor/
+
 # ML models and large files (use git-lfs if needed)
 *.h5
 *.pkl

@@ -1,0 +1,92 @@
+# AgenticOmni Documentation Site
+title: AgenticOmni
+description: AI-Powered Document Intelligence Platform
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://williamjxj.github.io" # your GitHub Pages URL
+repository: williamjxj/AgenticOmni
+
+# Theme
+theme: jekyll-theme-cayman
+# Alternative themes you can use:
+# theme: jekyll-theme-minimal
+# theme: jekyll-theme-slate
+# theme: jekyll-theme-architect
+# remote_theme: pages-themes/cayman@v0.2.0
+
+# Plugins
+plugins:
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-titles-from-headings
+  - jekyll-seo-tag
+
+# Plugin settings
+relative_links:
+  enabled: true
+  collections: true
+
+optional_front_matter:
+  remove_originals: true
+
+readme_index:
+  enabled: true
+  remove_originals: false
+  with_frontmatter: false
+
+titles_from_headings:
+  enabled: true
+  strip_title: true
+  collections: true
+
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  hard_wrap: false
+
+# Include/Exclude
+include:
+  - README.md
+  - docs/
+  - assets/
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - frontend/
+  - src/
+  - tests/
+  - scripts/
+  - htmlcov/
+  - tmp/
+  - uploads/
+  - .git
+  - .github
+  - alembic.ini
+  - docker-compose.yml
+  - pyproject.toml
+  - requirements.txt
+  - coverage.xml
+  - agenticomni.egg-info/
+  - __pycache__/
+  - config/
+
+# Navigation (if using a theme that supports it)
+nav_links:
+  - title: Home
+    url: /
+  - title: Quick Start
+    url: /docs/QUICKSTART
+  - title: Documentation
+    url: /docs/README
+  - title: API Reference
+    url: /docs/implementation
+  - title: GitHub
+    url: https://github.com/williamjxj/AgenticOmni
+
+# Social links
+github_username: williamjxj

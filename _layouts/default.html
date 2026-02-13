@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% seo %}
+    
+    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+    {% include head-custom.html %}
+    
+    <style>
+      .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      
+      .main-nav {
+        background: #f7fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+      }
+      
+      .main-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 2rem;
+      }
+      
+      .main-nav a {
+        color: #4a5568;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      
+      .main-nav a:hover {
+        color: #667eea;
+      }
+      
+      .doc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+      }
+      
+      .doc-card {
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        border-radius: 8px;
+        transition: box-shadow 0.2s, transform 0.2s;
+      }
+      
+      .doc-card:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+      
+      .doc-card h3 {
+        margin-top: 0;
+        color: #2d3748;
+      }
+      
+      .doc-card p {
+        color: #718096;
+        font-size: 0.9rem;
+      }
+      
+      .doc-card a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      
+      .doc-card a:hover {
+        text-decoration: underline;
+      }
+      
+      code {
+        background: #f7fafc;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+      
+      pre code {
+        display: block;
+        padding: 1rem;
+        overflow-x: auto;
+      }
+      
+      .btn {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+      
+      .btn:hover {
+        background: #5a67d8;
+        color: white;
+      }
+      
+      .footer {
+        margin-top: 4rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+        text-align: center;
+        color: #718096;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="page-header" role="banner">
+      <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
+      <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline }}</h2>
+      {% if site.github.is_project_page %}
+        <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
+      {% endif %}
+      {% if site.show_downloads %}
+        <a href="{{ site.github.zip_url }}" class="btn">Download .zip</a>
+        <a href="{{ site.github.tar_url }}" class="btn">Download .tar.gz</a>
+      {% endif %}
+    </header>
+
+    <nav class="main-nav">
+      <div class="container">
+        <ul>
+          <li><a href="{{ "/" | relative_url }}">Home</a></li>
+          <li><a href="{{ "/docs/QUICKSTART" | relative_url }}">Quick Start</a></li>
+          <li><a href="{{ "/docs/README" | relative_url }}">Documentation</a></li>
+          <li><a href="{{ "/docs/implementation" | relative_url }}">Implementation</a></li>
+          <li><a href="{{ "/docs/CONTRIBUTING" | relative_url }}">Contributing</a></li>
+          <li><a href="{{ site.github.repository_url }}">GitHub</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main id="content" class="main-content" role="main">
+      {{ content }}
+
+      <footer class="footer">
+        {% if site.github.is_project_page %}
+        <p>This project is maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></p>
+        {% endif %}
+        <p><small>Powered by <a href="https://pages.github.com">GitHub Pages</a> &amp; <a href="https://jekyllrb.com/">Jekyll</a></small></p>
+      </footer>
+    </main>
+  </body>
+</html>
