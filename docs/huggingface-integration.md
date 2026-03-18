@@ -1,15 +1,82 @@
-# HuggingFace Datasets Integration Guide
+
+# HuggingFace Datasets Integration Guide & Implementation Summary
 
 ## Overview
 
-AgenticOmni now supports importing datasets from HuggingFace Hub directly into your RAG system. This integration allows you to:
+
+OmniAI now supports importing datasets from HuggingFace Hub directly into your RAG system. This integration allows you to:
 
 - Import SQuAD and other HuggingFace datasets
 - Automatically chunk text using your existing 512-token chunker
 - Generate embeddings and store in pgvector
 - Search imported datasets alongside your uploaded documents
 
-## Installation
+
+## Implementation Summary
+
+### ✅ Completed Tasks
+
+1. Added `datasets` to requirements.txt
+2. Updated `config/settings.py` to load `HUGGINGFACE_TOKEN`
+3. Created ingestion and API routes for datasets
+4. Created comprehensive documentation and test suite
+
+### 📁 Files Created/Modified
+- `src/ingestion_parsing/services/hf_dataset_loader.py`
+- `src/ingestion_parsing/tasks/hf_dataset_tasks.py`
+- `src/api/routes/datasets.py`
+- `docs/huggingface-integration.md`
+- `QUICKSTART_HF.md`
+- `test_hf_integration.py`
+
+---
+
+### 🏗️ Architecture
+
+#### Components
+```
+┌─────────────────────────────────────────────────────────┐
+│                   API Layer                              │
+│  /api/v1/datasets/import                                 │
+│  /api/v1/datasets/validate/{name}                        │
+│  /api/v1/datasets/supported                              │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│              Background Tasks (Dramatiq)                 │
+│  import_hf_dataset_task()                                │
+│  → Load from HF → Create docs → Chunk → Embed           │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│                Service Layer                             │
+│  HFDatasetLoader: load_squad_dataset()                   │
+│  ChunkingService: chunk_document()                       │
+│  EmbeddingService: generate_embeddings()                 │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│              Database (PostgreSQL + pgvector)            │
+│  documents → document_chunks → embeddings                │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 🔄 Data Flow
+
+#### Import Process
+1. **API Request** → User calls `/api/v1/datasets/import`
+2. **Validation** → Check dataset name and parameters
+3. **Task Queue** → Dramatiq task triggered (returns job_id)
+4. **Load Dataset** → HFDatasetLoader fetches from HuggingFace
+5. **Create Documents** → Store in `documents` table
+6. **Chunking** → Split text (512 tokens, 50 overlap)
+7. **Store Chunks** → Save to `document_chunks` table
+8. **Embedding** → Trigger embedding generation task
 
 ### 1. Install Dependencies
 

@@ -1,4 +1,4 @@
-# AgenticOmni Documentation
+# OmniAI Documentation
 
 **Last Updated**: February 13, 2026  
 **Version**: 0.2.0
@@ -15,12 +15,12 @@
 
 ### Implementation & Status
 - **[implementation.md](./implementation.md)** - Complete implementation status and summary (v0.2.0, 387/387 tasks)
-- **[CHANGELOG.md](./CHANGELOG.md)** - Version history and release notes
+- **[changelog.md](./changelog.md)** - Version history and release notes
 - **[servers-status.md](./servers-status.md)** - Current server and service status
 
 ### Setup & Configuration
 - **[../README.md](../README.md)** - Main project README with quick start
-- **[QUICKSTART.md](./QUICKSTART.md)** - Quick start guide
+- **[quickstart.md](./quickstart.md)** - Quick start guide
 - **[environment.md](./environment.md)** - Complete environment variable reference
 - **[production.md](./production.md)** - Production deployment checklist
 
@@ -32,7 +32,7 @@
 
 ### Development Guidelines
 - **[versioning.md](./versioning.md)** - Documentation versioning and version control guide
-- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - How to contribute to the project
+- **[contributing.md](./contributing.md)** - How to contribute to the project
 - **[next-steps.md](./next-steps.md)** - Next steps and future features
 
 ### Specifications

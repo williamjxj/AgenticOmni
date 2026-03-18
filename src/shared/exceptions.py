@@ -1,12 +1,12 @@
-"""Custom exception classes for AgenticOmni.
+"""Custom exception classes for OmniAI (万象智文Omni Intelligent Documents).
 
 This module defines application-specific exceptions for better error handling
 and reporting.
 """
 
 
-class AgenticOmniException(Exception):
-    """Base exception for all AgenticOmni errors."""
+class OmniAIException(Exception):
+    """Base exception for all OmniAI (万象智文Omni Intelligent Documents) errors."""
 
     def __init__(self, message: str, *, details: dict[str, any] | None = None) -> None:
         """Initialize exception with message and optional details.

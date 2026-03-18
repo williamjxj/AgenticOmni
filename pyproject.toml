@@ -1,7 +1,7 @@
 [project]
-name = "agenticomni"
-version = "0.1.0"
-description = "AgenticOmni - AI-powered document intelligence platform with ETL-to-RAG pipeline"
+name = "omniai"
+version = "0.8.0"
+description = "OmniAI - 万象智文Omni Intelligent Documents, AI-powered document intelligence platform with ETL-to-RAG pipeline"
 authors = [
     {name = "Best IT Consultants", email = "contact@agenticomni.example.com"}
 ]

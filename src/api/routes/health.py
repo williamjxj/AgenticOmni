@@ -49,7 +49,7 @@ class HealthResponse(BaseModel):
     version: str = Field(
         ...,
         description="API version",
-        examples=["0.1.0"],
+        examples=["0.8.0"],
     )
     checks: dict[str, ServiceCheck] = Field(
         ...,
@@ -71,7 +71,7 @@ class HealthResponse(BaseModel):
                     "example": {
                         "status": "healthy",
                         "timestamp": "2026-01-09T10:00:00Z",
-                        "version": "0.1.0",
+                        "version": "0.8.0",
                         "checks": {"database": {"status": "healthy", "response_time_ms": 5.2}},
                     }
                 }
@@ -128,6 +128,6 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> HealthResponse:
     return HealthResponse(
         status=overall_status,
         timestamp=datetime.now(UTC),
-        version="0.1.0",
+        version="0.8.0",
         checks=checks,
     )

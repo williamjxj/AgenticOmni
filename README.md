@@ -1,18 +1,18 @@
-# AgenticOmni: AI-Powered Document Intelligence Platform
+# OmniAI (万象智文Omni Intelligent Documents): AI-Powered Document Intelligence Platform
 
 **Status**: ✅ MVP Complete - Document Upload & Processing Pipeline  
-**Version**: 0.2.0  
+**Version**: 0.8.0  
 **License**: Proprietary
 
 > 🌐 **Documentation Site**: [https://williamjxj.github.io/AgenticOmni](https://williamjxj.github.io/AgenticOmni)  
-> 🚀 **Quick Start**: See [docs/QUICKSTART.md](docs/QUICKSTART.md) for immediate setup  
+> 🚀 **Quick Start**: See [docs/quickstart.md](docs/quickstart.md) for immediate setup  
 > 📖 **Next Steps Guide**: [docs/next-steps.md](docs/next-steps.md) - Upload → RAG → Search workflow
 
 ## 📄 Overview
 
-AgenticOmni is an enterprise-grade AI document intelligence platform built on an ETL-to-RAG pipeline architecture. The system transforms complex multi-format documents (PDF, DOCX, TXT) into searchable, intelligent knowledge bases powered by retrieval-augmented generation.
+OmniAI (万象智文Omni Intelligent Documents) is an enterprise-grade AI document intelligence platform built on an ETL-to-RAG pipeline architecture. The system transforms complex multi-format documents (PDF, DOCX, TXT) into searchable, intelligent knowledge bases powered by retrieval-augmented generation.
 
-### 🎯 Current Features (v0.2.0)
+### 🎯 Current Features (v0.8.0)
 
 #### Document Upload & Processing
 - ✅ **Multi-Format Support**: PDF (Docling), DOCX (python-docx), TXT
@@ -246,6 +246,7 @@ npm run dev
 ### Verify Installation
 
 ```bash
+
 # Test health endpoint
 curl http://localhost:8000/api/v1/health
 
@@ -253,7 +254,7 @@ curl http://localhost:8000/api/v1/health
 # {
 #   "status": "healthy",
 #   "timestamp": "2026-01-09T...",
-#   "version": "0.1.0",
+#   "version": "0.8.0",
 #   "checks": {
 #     "database": {"status": "healthy", "response_time_ms": 5},
 #     "redis": {"status": "healthy", "response_time_ms": 2}
@@ -307,11 +308,11 @@ See `.env.example` for complete configuration options with documentation.
 
 ### 📖 Core Documentation
 
-All documentation follows [Semantic Versioning](https://semver.org/) with change tracking in [CHANGELOG.md](./docs/CHANGELOG.md).
+All documentation follows [Semantic Versioning](https://semver.org/) with change tracking in [changelog.md](./docs/changelog.md).
 
-- **[Documentation Index](./docs/README.md)** - Complete documentation catalog and navigation
+- **[Documentation Index](./docs/readme.md)** - Complete documentation catalog and navigation
 - **[Implementation](./docs/implementation.md)** v0.2.0 - Complete implementation status and summary (387/387 tasks)
-- **[CHANGELOG](./docs/CHANGELOG.md)** - Version history and release notes
+- **[changelog](./docs/changelog.md)** - Version history and release notes
 
 ### 🎯 Setup & Configuration Guides
 
@@ -332,7 +333,7 @@ All documentation follows [Semantic Versioning](https://semver.org/) with change
 
 ### 📝 Development Guidelines
 
-- **[Contributing Guidelines](./docs/CONTRIBUTING.md)** - How to contribute
+- **[Contributing Guidelines](./docs/contributing.md)** - How to contribute
 - **[Versioning](./docs/VERSIONING.md)** - Documentation versioning and version control guide
 - **[Document Templates](./docs/templates/)** - ADR and technical doc templates
 
@@ -431,7 +432,7 @@ docker-compose restart postgres
 ## 📁 Project Structure
 
 ```
-agenticomni/
+omniai/
 ├── src/                      # Backend source code
 │   ├── api/                  # FastAPI application
 │   ├── storage_indexing/     # Database models and migrations

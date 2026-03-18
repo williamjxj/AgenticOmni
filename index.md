@@ -1,14 +1,14 @@
 ---
 layout: default
-title: AgenticOmni - AI-Powered Document Intelligence Platform
+title: OmniAI (万象智文Omni Intelligent Documents) - AI-Powered Document Intelligence Platform
 ---
 
 {% include navigation.html %}
 
-# AgenticOmni: AI-Powered Document Intelligence Platform
+## OmniAI (万象智文Omni Intelligent Documents): AI-Powered Document Intelligence Platform
 
 **Status**: ✅ MVP Complete - Document Upload & Processing Pipeline  
-**Version**: 0.2.0  
+**Version**: 0.8.0  
 **License**: Proprietary
 
 ---
