@@ -90,7 +90,7 @@ export function TextPreview({
     );
   }
 
-  if (!preview || preview.pages.length === 0) {
+  if (!preview || !Array.isArray(preview.pages) || preview.pages.length === 0) {
     return (
       <Card>
         <CardContent className="p-6 text-center text-slate-600 dark:text-slate-400">
