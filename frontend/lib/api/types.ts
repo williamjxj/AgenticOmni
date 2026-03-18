@@ -9,8 +9,9 @@ export interface UploadResponse {
   file_size: number;
   mime_type: string;
   content_hash: string;
-  job_id: number;
+  job_id: number | null;
   status: string;
+  is_duplicate: boolean;
 }
 
 export interface BatchUploadResponse {

@@ -230,12 +230,24 @@ class UploadService:
             )
             if existing_doc:
                 logger.info(
-                    "Duplicate document detected",
+                    "Duplicate document detected - returning existing document",
                     existing_document_id=existing_doc.document_id,
                     content_hash=content_hash,
+                    original_filename=existing_doc.original_filename,
                 )
-                # Return existing document (optional: could raise error instead)
-                # For now, proceed with new upload
+                
+                # Get the latest job for this document (if any)
+                jobs = await self.job_repo.get_by_document(existing_doc.document_id)
+                latest_job = jobs[0] if jobs else None
+                
+                logger.info(
+                    "Returning existing document",
+                    document_id=existing_doc.document_id,
+                    job_id=latest_job.job_id if latest_job else None,
+                )
+                
+                # Return existing document and its latest job
+                return existing_doc, latest_job
             
             # Generate storage filename
             file_extension = Path(filename).suffix or self._get_extension_from_mime(mime_type)

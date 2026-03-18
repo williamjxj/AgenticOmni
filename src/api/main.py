@@ -15,7 +15,7 @@ from src.api.middleware import (
     LoggingMiddleware,
     RequestIDMiddleware,
 )
-from src.api.routes import documents, health, metrics, ocr, processing, search
+from src.api.routes import datasets, documents, health, metrics, ocr, processing, search
 from src.shared.config import settings
 from src.shared.logging_config import configure_logging, get_logger
 from src.storage_indexing.database import close_db, init_db
@@ -119,6 +119,10 @@ def create_app() -> FastAPI:
     )
     app.include_router(
         search.router,
+        prefix=f"/api/{settings.api_version}",
+    )
+    app.include_router(
+        datasets.router,
         prefix=f"/api/{settings.api_version}",
     )
 

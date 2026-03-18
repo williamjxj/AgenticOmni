@@ -1,7 +1,7 @@
 # AgenticOmni Documentation Site
 title: AgenticOmni
 description: AI-Powered Document Intelligence Platform
-baseurl: "" # the subpath of your site, e.g. /blog
+baseurl: "/AgenticOmni" # the subpath for GitHub Pages
 url: "https://williamjxj.github.io" # your GitHub Pages URL
 repository: williamjxj/AgenticOmni
 

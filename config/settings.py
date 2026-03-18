@@ -427,6 +427,14 @@ class Settings(BaseSettings):
     )
 
     # ========================================================================
+    # HuggingFace Configuration
+    # ========================================================================
+    huggingface_token: str | None = Field(
+        default=None,
+        description="HuggingFace API token for dataset access",
+    )
+
+    # ========================================================================
     # OCR Configuration (Feature 004-ocr-embedding-pipeline)
     # ========================================================================
     ocr_engine: str = Field(

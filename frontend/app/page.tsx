@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FileText, Search, Upload, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
+import { FileText, Search, Upload, Zap, CheckCircle2, ArrowRight, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -30,6 +30,12 @@ export default function HomePage() {
                 Search Documents
               </Link>
             </Button>
+            <Button size="lg" variant="outline" className="text-lg px-8 border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-950" asChild>
+              <Link href="/datasets">
+                <Database className="mr-2 h-5 w-5" />
+                HF Datasets
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -40,7 +46,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-center mb-12">
             Simple 3-Step Process
           </h2>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {/* Step 1 */}
             <Card className="border-2">
@@ -147,7 +153,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-center mb-12">
             Powerful Features
           </h2>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>

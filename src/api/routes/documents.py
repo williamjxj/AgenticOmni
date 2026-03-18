@@ -4,12 +4,13 @@ import math
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
+from fastapi.responses import JSONResponse, StreamingResponse
 
 import structlog
 
 from src.api.dependencies import (
+    get_chunk_repository,
     get_document_repository,
     get_file_storage,
     get_job_repository,
@@ -42,6 +43,7 @@ from src.shared.exceptions import (
 )
 from src.storage_indexing.repositories.document_repository import DocumentRepository
 from src.storage_indexing.repositories.job_repository import JobRepository
+from src.storage_indexing.repositories.chunk_repository import ChunkRepository
 from src.storage_indexing.repositories.upload_session_repository import (
     UploadSessionRepository,
 )
@@ -118,6 +120,9 @@ async def upload_document(
             user_id=user_id,
         )
         
+        # Determine if this is a duplicate (job is None for duplicates with existing processing)
+        is_duplicate = job is None
+        
         # Build response
         response = UploadResponse(
             document_id=document.document_id,
@@ -126,14 +131,16 @@ async def upload_document(
             file_size=document.file_size,
             mime_type=document.mime_type,
             content_hash=document.content_hash,
-            job_id=job.job_id,
+            job_id=job.job_id if job else None,
             status=document.processing_status,
+            is_duplicate=is_duplicate,
         )
         
         logger.info(
-            "Document uploaded successfully",
+            "Document upload completed",
             document_id=document.document_id,
-            job_id=job.job_id,
+            job_id=job.job_id if job else None,
+            is_duplicate=is_duplicate,
             tenant_id=tenant_id,
         )
         
@@ -361,6 +368,201 @@ async def get_document(
     )
 
 
+@router.get("/{document_id}/download", status_code=status.HTTP_200_OK)
+async def download_document(
+    document_id: int,
+    tenant_id: int,
+    document_repo: DocumentRepository = Depends(get_document_repository),
+    storage: FileStorage = Depends(get_file_storage),
+) -> StreamingResponse:
+    """Download the original file for a document.
+
+    Args:
+        document_id: Document ID
+        tenant_id: Tenant ID for isolation
+        document_repo: Document repository (injected)
+        storage: File storage backend (injected)
+
+    Returns:
+        Streaming file response with Content-Disposition for browser save-as
+
+    Raises:
+        HTTPException 404: Document not found or file missing from storage
+    """
+    document = await document_repo.get_by_id(document_id, tenant_id)
+
+    if not document:
+        logger.warning("Document not found for download", document_id=document_id, tenant_id=tenant_id)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    try:
+        file_bytes = await storage.download(document.storage_path)
+    except FileNotFoundError:
+        logger.error(
+            "File not found in storage",
+            document_id=document_id,
+            storage_path=document.storage_path,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found in storage",
+        )
+
+    import io
+    from fastapi.responses import StreamingResponse
+
+    content_type = document.mime_type or "application/octet-stream"
+    safe_filename = document.original_filename or document.filename
+
+    logger.info(
+        "Document download initiated",
+        document_id=document_id,
+        filename=safe_filename,
+        file_size=len(file_bytes),
+    )
+
+    return StreamingResponse(
+        io.BytesIO(file_bytes),
+        media_type=content_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{safe_filename}"',
+            "Content-Length": str(len(file_bytes)),
+        },
+    )
+
+
+@router.get("/{document_id}/text-preview", status_code=status.HTTP_200_OK)
+async def get_document_text_preview(
+    document_id: int,
+    max_pages: Annotated[int, Query(description="Maximum pages to include", ge=1, le=100)] = 5,
+    preview_length: Annotated[int, Query(description="Maximum characters to return", ge=100, le=10000)] = 1000,
+    document_repo: DocumentRepository = Depends(get_document_repository),
+    chunk_repo: ChunkRepository = Depends(get_chunk_repository),
+    request: Request = None,
+) -> JSONResponse:
+    """Get text preview from document chunks.
+    
+    Returns a preview of the extracted text from the document's chunks.
+    Useful for displaying a preview without downloading the entire document.
+    
+    Args:
+        document_id: Document ID
+        max_pages: Maximum number of pages to include
+        preview_length: Maximum character length for preview
+        document_repo: Document repository (injected)
+        chunk_repo: Chunk repository (injected)
+        request: FastAPI request for getting DB session
+        
+    Returns:
+        Text preview with metadata
+        
+    Raises:
+        HTTPException 404: Document not found or no chunks available
+    """
+    # Get tenant_id from query params or headers
+    tenant_id = int(request.query_params.get("tenant_id", 1))
+    
+    # Get document
+    document = await document_repo.get_by_id(document_id, tenant_id)
+    if not document:
+        logger.warning(
+            "Document not found for text preview",
+            document_id=document_id,
+            tenant_id=tenant_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+    
+    # Check if document has been parsed
+    if document.processing_status != "parsed":
+        logger.warning(
+            "Document not yet parsed",
+            document_id=document_id,
+            status=document.processing_status,
+        )
+        return JSONResponse(
+            content={
+                "document_id": document_id,
+                "status": document.processing_status,
+                "preview_text": "",
+                "total_chunks": 0,
+                "page_count": document.page_count or 0,
+                "is_truncated": False,
+                "message": "Document has not been parsed yet",
+            }
+        )
+    
+    # Get chunks from repository
+    chunks = await chunk_repo.get_by_document(document_id)
+    
+    if not chunks:
+        logger.info(
+            "No chunks found for document",
+            document_id=document_id,
+        )
+        return JSONResponse(
+            content={
+                "document_id": document_id,
+                "status": "parsed",
+                "preview_text": "",
+                "total_chunks": 0,
+                "page_count": document.page_count or 0,
+                "is_truncated": False,
+                "message": "No text chunks available",
+            }
+        )
+    
+    # Filter chunks by page if needed
+    if max_pages and document.page_count:
+        chunks = [
+            chunk for chunk in chunks
+            if chunk.start_page is None or chunk.start_page <= max_pages
+        ]
+    
+    # Sort by chunk order
+    chunks.sort(key=lambda c: c.chunk_order)
+    
+    # Concatenate chunk text
+    preview_text = ""
+    for chunk in chunks:
+        chunk_content = chunk.content_text or ""
+        if len(preview_text) + len(chunk_content) > preview_length:
+            # Add partial chunk to reach preview_length
+            remaining = preview_length - len(preview_text)
+            preview_text += chunk_content[:remaining]
+            break
+        preview_text += chunk_content + "\n\n"
+    
+    is_truncated = len(preview_text) >= preview_length or (
+        max_pages and document.page_count and document.page_count > max_pages
+    )
+    
+    logger.info(
+        "Text preview generated",
+        document_id=document_id,
+        chunks_used=len([c for c in chunks if c.content_text in preview_text]),
+        total_chunks=len(chunks),
+        preview_length=len(preview_text),
+    )
+    
+    return JSONResponse(
+        content={
+            "document_id": document_id,
+            "status": "parsed",
+            "preview_text": preview_text.strip(),
+            "total_chunks": len(chunks),
+            "page_count": document.page_count or 0,
+            "is_truncated": is_truncated,
+            "message": "Preview generated successfully",
+        }
+    )
+
+
 @router.get("", status_code=status.HTTP_200_OK)
 async def list_documents(
     tenant_id: Annotated[int, Query(description="Tenant ID for filtering")],
@@ -397,16 +599,67 @@ async def list_documents(
         file_type=file_type,
     )
     
-    # For now, return a placeholder response
-    # Full implementation would query the database with filters
+    # Build query with filters
+    from sqlalchemy import select, func
+    from src.storage_indexing.models import Document
+    
+    query = select(Document).where(Document.tenant_id == tenant_id)
+    
+    # Apply filters
+    if status_filter:
+        query = query.where(Document.processing_status == status_filter)
+    if file_type:
+        query = query.where(Document.file_type == file_type)
+    
+    # Order by created_at desc
+    query = query.order_by(Document.created_at.desc())
+    
+    # Get total count
+    count_query = select(func.count()).select_from(query.subquery())
+    total = await document_repo.db.scalar(count_query)
+    
+    # Apply pagination
+    offset = (page - 1) * limit
+    query = query.offset(offset).limit(limit)
+    
+    # Execute query
+    result = await document_repo.db.execute(query)
+    documents = result.scalars().all()
+    
+    # Calculate total pages
+    total_pages = (total + limit - 1) // limit if total > 0 else 0
+    
+    # Format response
+    document_list = [
+        {
+            "document_id": doc.document_id,
+            "original_filename": doc.original_filename,
+            "file_type": doc.file_type,
+            "file_size": doc.file_size,
+            "processing_status": doc.processing_status,
+            "created_at": doc.created_at.isoformat() if doc.created_at else None,
+            "language": doc.language,
+            "page_count": doc.page_count,
+            "embedding_status": "pending",  # TODO: Add actual embedding status
+        }
+        for doc in documents
+    ]
+    
+    logger.info(
+        "Documents listed",
+        tenant_id=tenant_id,
+        total=total,
+        page=page,
+        returned=len(document_list),
+    )
     
     return JSONResponse(
         content={
-            "documents": [],
+            "documents": document_list,
             "page": page,
             "limit": limit,
-            "total": 0,
-            "total_pages": 0,
+            "total": total,
+            "total_pages": total_pages,
             "filters": {
                 "status": status_filter,
                 "file_type": file_type,

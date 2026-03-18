@@ -9,13 +9,23 @@
  * @example
  * ```ts
  * formatDate('2024-01-15T10:30:00Z') // "Jan 15, 2024, 10:30 AM"
+ * formatDate(null) // "N/A"
  * ```
  */
 export function formatDate(
-  dateString: string | Date,
+  dateString: string | Date | null | undefined,
   options?: Intl.DateTimeFormatOptions
 ): string {
+  if (!dateString) {
+    return 'N/A';
+  }
+  
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  // Check if date is invalid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
   
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -35,10 +45,21 @@ export function formatDate(
  * @example
  * ```ts
  * formatRelativeTime('2024-01-15T10:00:00Z') // "2 hours ago"
+ * formatRelativeTime(null) // "N/A"
  * ```
  */
-export function formatRelativeTime(dateString: string | Date): string {
+export function formatRelativeTime(dateString: string | Date | null | undefined): string {
+  if (!dateString) {
+    return 'N/A';
+  }
+  
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  // Check if date is invalid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+  
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffSec = Math.floor(diffMs / 1000);
@@ -72,10 +93,20 @@ export function formatRelativeTime(dateString: string | Date): string {
  * @example
  * ```ts
  * formatShortDate('2024-01-15T10:30:00Z') // "Jan 15, 2024"
+ * formatShortDate(null) // "N/A"
  * ```
  */
-export function formatShortDate(dateString: string | Date): string {
+export function formatShortDate(dateString: string | Date | null | undefined): string {
+  if (!dateString) {
+    return 'N/A';
+  }
+  
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  // Check if date is invalid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
   
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -90,10 +121,20 @@ export function formatShortDate(dateString: string | Date): string {
  * @example
  * ```ts
  * formatTime('2024-01-15T10:30:00Z') // "10:30 AM"
+ * formatTime(null) // "N/A"
  * ```
  */
-export function formatTime(dateString: string | Date): string {
+export function formatTime(dateString: string | Date | null | undefined): string {
+  if (!dateString) {
+    return 'N/A';
+  }
+  
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  // Check if date is invalid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
   
   return date.toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -107,14 +148,24 @@ export function formatTime(dateString: string | Date): string {
  * @example
  * ```ts
  * formatDateRange('2024-01-15', '2024-01-20') // "Jan 15 - Jan 20, 2024"
+ * formatDateRange(null, null) // "N/A"
  * ```
  */
 export function formatDateRange(
-  startDate: string | Date,
-  endDate: string | Date
+  startDate: string | Date | null | undefined,
+  endDate: string | Date | null | undefined
 ): string {
+  if (!startDate || !endDate) {
+    return 'N/A';
+  }
+  
   const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
   const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
+  
+  // Check if dates are invalid
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return 'Invalid Date';
+  }
 
   const sameYear = start.getFullYear() === end.getFullYear();
   const sameMonth = sameYear && start.getMonth() === end.getMonth();
@@ -134,10 +185,21 @@ export function formatDateRange(
  * @example
  * ```ts
  * formatForInput('2024-01-15T10:30:00Z') // "2024-01-15T10:30"
+ * formatForInput(null) // ""
  * ```
  */
-export function formatForInput(dateString: string | Date): string {
+export function formatForInput(dateString: string | Date | null | undefined): string {
+  if (!dateString) {
+    return '';
+  }
+  
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  // Check if date is invalid
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+  
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -150,8 +212,18 @@ export function formatForInput(dateString: string | Date): string {
 /**
  * Check if date is today
  */
-export function isToday(dateString: string | Date): boolean {
+export function isToday(dateString: string | Date | null | undefined): boolean {
+  if (!dateString) {
+    return false;
+  }
+  
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  // Check if date is invalid
+  if (isNaN(date.getTime())) {
+    return false;
+  }
+  
   const today = new Date();
   
   return (
@@ -164,8 +236,18 @@ export function isToday(dateString: string | Date): boolean {
 /**
  * Check if date is yesterday
  */
-export function isYesterday(dateString: string | Date): boolean {
+export function isYesterday(dateString: string | Date | null | undefined): boolean {
+  if (!dateString) {
+    return false;
+  }
+  
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  // Check if date is invalid
+  if (isNaN(date.getTime())) {
+    return false;
+  }
+  
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   
@@ -186,10 +268,20 @@ export function isYesterday(dateString: string | Date): boolean {
  * // If today: "Today at 10:30 AM"
  * // If yesterday: "Yesterday at 10:30 AM"
  * // Otherwise: "Jan 15, 2024"
+ * formatSmartDate(null) // "N/A"
  * ```
  */
-export function formatSmartDate(dateString: string | Date): string {
+export function formatSmartDate(dateString: string | Date | null | undefined): string {
+  if (!dateString) {
+    return 'N/A';
+  }
+  
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  // Check if date is invalid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
   
   if (isToday(date)) {
     return `Today at ${formatTime(date)}`;
@@ -213,14 +305,24 @@ export function formatSmartDate(dateString: string | Date): string {
  * @example
  * ```ts
  * getDuration('2024-01-15T10:00:00Z', '2024-01-15T11:30:00Z') // "1 hour 30 minutes"
+ * getDuration(null, null) // "N/A"
  * ```
  */
 export function getDuration(
-  startDate: string | Date,
-  endDate: string | Date
+  startDate: string | Date | null | undefined,
+  endDate: string | Date | null | undefined
 ): string {
+  if (!startDate || !endDate) {
+    return 'N/A';
+  }
+  
   const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
   const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
+  
+  // Check if dates are invalid
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return 'Invalid Date';
+  }
   
   const diffMs = end.getTime() - start.getTime();
   const diffSec = Math.floor(diffMs / 1000);

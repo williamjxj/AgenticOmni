@@ -35,8 +35,9 @@ class UploadResponse(BaseModel):
     file_size: int = Field(..., description="File size in bytes")
     mime_type: str = Field(..., description="Detected MIME type")
     content_hash: str = Field(..., description="SHA-256 content hash")
-    job_id: int = Field(..., description="Created processing job ID")
+    job_id: int | None = Field(None, description="Created processing job ID (None if duplicate)")
     status: str = Field(..., description="Processing status")
+    is_duplicate: bool = Field(False, description="Whether this is a duplicate upload")
     
     class Config:
         """Pydantic configuration."""
@@ -51,6 +52,7 @@ class UploadResponse(BaseModel):
                 "content_hash": "abc123def456...",
                 "job_id": 456,
                 "status": "uploaded",
+                "is_duplicate": False,
             }
         }
 

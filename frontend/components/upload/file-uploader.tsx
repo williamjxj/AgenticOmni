@@ -183,9 +183,19 @@ export function FileUploader() {
                         </p>
                       )}
                       {fileWithStatus.result && (
-                        <p className="text-sm text-green-600 mt-1">
-                          Uploaded • Job ID: {fileWithStatus.result.job_id}
-                        </p>
+                        <>
+                          {fileWithStatus.result.is_duplicate ? (
+                            <p className="text-sm text-amber-600 mt-1">
+                              Duplicate detected • Doc ID: {fileWithStatus.result.document_id}
+                              {fileWithStatus.result.job_id && ` • Job ID: ${fileWithStatus.result.job_id}`}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-green-600 mt-1">
+                              Uploaded • Doc ID: {fileWithStatus.result.document_id}
+                              {fileWithStatus.result.job_id && ` • Job ID: ${fileWithStatus.result.job_id}`}
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
 

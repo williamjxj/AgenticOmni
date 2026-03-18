@@ -116,6 +116,8 @@ export async function fetchDocumentById(
   includeChunks: boolean = false
 ): Promise<DocumentDetailResponse> {
   const params = new URLSearchParams();
+  // Backend requires tenant_id; default to 1 for single-tenant dev
+  params.append('tenant_id', '1');
   if (includeChunks) params.append('include_chunks', 'true');
 
   const url = `${API_BASE_URL}${API_PREFIX}/documents/${documentId}?${params}`;
@@ -198,7 +200,7 @@ export async function fetchEmbeddingStatistics(
  * Delete a document
  */
 export async function deleteDocument(documentId: number): Promise<void> {
-  const url = `${API_BASE_URL}${API_PREFIX}/documents/${documentId}`;
+  const url = `${API_BASE_URL}${API_PREFIX}/documents/${documentId}?tenant_id=1`;
 
   const response = await fetch(url, {
     method: 'DELETE',
@@ -206,6 +208,34 @@ export async function deleteDocument(documentId: number): Promise<void> {
   });
 
   await handleResponse<{ message: string }>(response);
+}
+
+/**
+ * Download a document file — triggers browser save-as dialog.
+ * Uses the backend streaming download endpoint.
+ */
+export async function downloadDocument(
+  documentId: number,
+  filename: string = 'document'
+): Promise<void> {
+  const url = `${API_BASE_URL}${API_PREFIX}/documents/${documentId}/download?tenant_id=1`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || err.error?.message || `HTTP ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const blobUrl = URL.createObjectURL(blob);
+
+  const anchor = document.createElement('a');
+  anchor.href = blobUrl;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
 }
 
 /**

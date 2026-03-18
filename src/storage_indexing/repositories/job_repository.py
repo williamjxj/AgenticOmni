@@ -37,7 +37,7 @@ class JobRepository:
     async def create(
         self,
         *,
-        document_id: int,
+        document_id: int | None,
         job_type: str,
         started_by: int | None = None,
         tenant_id: int | None = None,
@@ -45,7 +45,7 @@ class JobRepository:
         """Create a new processing job.
         
         Args:
-            document_id: Document ID being processed
+            document_id: Document ID being processed (None for non-document jobs)
             job_type: Type of job (parsing, chunking, embedding, etc.)
             started_by: User ID who started the job
             tenant_id: Tenant ID (optional, will be fetched from document if not provided)
@@ -53,8 +53,8 @@ class JobRepository:
         Returns:
             Created ProcessingJob instance
         """
-        # If tenant_id not provided, fetch it from the document
-        if tenant_id is None:
+        # If tenant_id not provided and document_id is set, fetch it from the document
+        if tenant_id is None and document_id is not None:
             from sqlalchemy import select
             from src.storage_indexing.models import Document
             stmt = select(Document.tenant_id).where(Document.document_id == document_id)
