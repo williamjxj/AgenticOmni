@@ -1,28 +1,19 @@
-## OmniAI (万象智文Omni Intelligent Documents) – Technical & Business Analysis
+# 1. AgenticOmni – Pros & Cons
 
-### 1. Modern Enterprise AI Stack
+## 1.1 Major Advantages (Good Foundation)
 
-**Pipeline:** ETL → RAG → Agent → Human
+### 1️⃣ Correct architecture direction
 
-**Stack:**
-- Python
-- Next.js
-- LangChain
-- Supabase
-- Vector DB
+Your pipeline:
 
-**Target:**
-- Enterprise SaaS
-- Upgrade legacy document systems
+```
+ETL → RAG → Agent → Human
+```
 
-**Key Industries:**
-- Legal, insurance, government, healthcare, engineering, finance
+This is **exactly the modern enterprise AI stack**.
 
----
+Typical enterprise document AI architecture:
 
-### 2. Major Advantages
-
-**Correct architecture direction:**
 ```
 Document ingestion
    ↓
@@ -37,136 +28,29 @@ Agent reasoning
 Human verification
 ```
 
-**Enterprise upgrade positioning:**
-Upgrade legacy document/paper systems with AI. Most companies still use SharePoint, file servers, paper documents, PDFs, legacy ECM systems. OmniAI can become the AI layer on top of enterprise documents.
-
-**Good technology stack:**
-| Layer    | Tech      | Verdict   |
-| -------- | --------- | --------- |
-| Frontend | Next.js   | excellent |
-| Backend  | Python    | excellent |
-| Agent    | LangChain | good      |
-| DB       | Supabase  | good      |
-| Vector   | vector DB | correct   |
-
-**Agentic architecture:**
-Future model: software → AI agents → users. This is the direction major companies are moving toward.
+You already follow this correctly.
 
 ---
 
-### 3. Weaknesses & Recommendations
+### 2️⃣ Enterprise upgrade positioning
 
-**No clear differentiation yet:**
-Currently similar to RAG platforms, AI knowledge bases, document AI systems (Dify, RagFlow, Glean, LlamaIndex Cloud, OpenAI Enterprise Retrieval). Need unique features.
+This positioning is **very good**:
 
-**Missing enterprise features:**
-Security, compliance, audit, permissions, monitoring, cost control. Add centralized AI policy, audit logs, agent permission control, data governance.
+> “Upgrade legacy document / paper systems with AI”
 
-**No multi-agent orchestration:**
-Modern AI systems are multi-agent. Support agent teams, agent pipelines, agent orchestration.
+Most companies still use:
 
-**No plugin ecosystem:**
-Enterprise systems need connectors (SAP, Salesforce, SharePoint, Google Drive, Dropbox, Slack, Notion, Jira, CRM, ERP). Add connectors via standardized protocols (MCP servers).
+* SharePoint
+* File servers
+* Paper documents
+* PDFs
+* legacy ECM systems
 
-**Missing AI governance layer:**
-Add AI governance, cost control, usage monitoring, model routing (AI Gateway, Agent Gateway, MCP Gateway).
+Your system can become:
 
----
+**AI layer on top of enterprise documents**
 
-### 4. Practical Stack & Implementation Blueprint
-
-**Ingestion + parsing:**
-- Docling for high-quality document conversion (PDF/DOCX/PPTX → structured text/markdown/json)
-- OCR: PaddleOCR / DeepSeek OCR (wrap behind interface)
-
-**Storage:**
-- PostgreSQL as system-of-record (metadata, tenants, permissions, processing status)
-- pgvector for embeddings
-- Optional: S3/MinIO for originals/artifacts
-
-**Indexing / retrieval:**
-- Hybrid: vector + keyword (Postgres full-text search, pgvector)
-- Optional: reranker model or LLM-based rerank on top-K
-
-**RAG orchestration:**
-- LangChain / LlamaIndex (design a "retrieval contract" layer for flexibility)
-
-**GraphRAG:**
-- Use for cross-document relationship reasoning (people/orgs/transactions/contracts)
-
-**LoRA:**
-- Phase 2–3: fine-tune smaller models for classification, routing, entity extraction, or domain style
-
-**Evaluation + QA:**
-- Build evaluation harness early (retrieval metrics, extraction accuracy, regression tests)
-
-**Deployment:**
-- MVP: Docker Compose / single VM
-- Mature: Kubernetes + background workers + queue + metrics/logging
-
----
-
-### 5. Implementation Roadmap & Folder Structure
-
-**Recommended Folders:**
-- `/ingestion_parsing`: Docling, OCR interface
-- `/storage_indexing`: PostgreSQL, pgvector, metadata, tenants, permissions
-- `/rag_orchestration`: LangChain/LlamaIndex workflows, retrieval contract
-- `/eval_harness`: Retrieval metrics, extraction accuracy tests
-- `/security_auth`: Multi-tenant separation, RBAC
-- `/api`: Backend server, natural querying, admin tasks, audit pack exports
-- `/frontend`: UI and visualization
-
-**Analogy:**
-Tech solution as a Digital Librarian: Docling/Whisper are "eyes and ears"; PostgreSQL/pgvector is the "shelf system"; LangGraph agents are "expert researchers".
-
----
-
-### 6. Visual Workflows & Diagrams
-
-#### Batch Processing Sequence
-```mermaid
-sequenceDiagram
-    participant Scheduler
-    participant CloudContainer as Container Job (Cloud Run / ECS)
-    participant Storage as Cloud Storage (S3/GCS)
-    participant OCR as Tesseract OCR
-    participant Parser as Invoice Parser
-    participant Output as Output Writer (CSV/Parquet)
-
-    Scheduler->>CloudContainer: Trigger batch job (e.g., daily)
-    CloudContainer->>Storage: List & load input files
-    loop For each invoice
-        CloudContainer->>CloudContainer: Detect file type (CSV/JSON/PDF/Image)
-        alt Text-based (CSV/JSON)
-            CloudContainer->>Parser: Parse directly with Pandas
-        else Scanned PDF/Image
-            CloudContainer->>OCR: Pre-process + OCR via Tesseract
-            OCR-->>Parser: Return text content
-            Parser->>Parser: Extract key fields via regex/templates
-        end
-    end
-    Parser->>Output: Aggregate results in memory
-    Output->>Storage: Write structured output (CSV/Parquet)
-    CloudContainer-->>Scheduler: Report success/failure (optional)
-```
-
-#### Batch Processing Flowchart
-```mermaid
-flowchart TD
-    A[Start - Scheduler Trigger] --> B[Spin up Container Job]
-    B --> C[Load Files from Cloud Storage]
-    C --> D{File Type?}
-    D -->|CSV/JSON| E[Parse via Pandas/Polars]
-    D -->|PDF/Image| F[Preprocess with OpenCV]
-    F --> G[OCR with Tesseract]
-    G --> H[Parse Text for Invoice Fields]
-    E --> I[Aggregate to DataFrame]
-    H --> I
-    I --> J[Write Output CSV/Parquet]
-    J --> K[Upload to Storage]
-    K --> L[Job Complete / Notify]
-```
+Example industries:
 
 * legal
 * insurance
@@ -769,19 +653,3 @@ Instead position it as:
 or
 
 ### **Autonomous Document Intelligence Platform**
-
----
-
-# If you want, I can also show you:
-
-1️⃣ **20 killer features that could make AgenticOmni a top AI project on GitHub**
-2️⃣ **Startup roadmap to turn AgenticOmni into a $50M SaaS product**
-3️⃣ **A redesigned architecture better than Dify / LangChain apps**
-4️⃣ **The exact features investors expect in 2026 AI startups**
-
-These will help your project **stand out globally**.
-
-[1]: https://workingagents.ai/?utm_source=chatgpt.com "WorkingAgents — AI Infrastructure for the Agent Era"
-[2]: https://arxiv.org/abs/2402.14034?utm_source=chatgpt.com "AgentScope: A Flexible yet Robust Multi-Agent Platform"
-[3]: https://gist.github.com/ruvnet/2e08d3ac9bf936fd867978aaa4f0d3c6?utm_source=chatgpt.com "Agentic Coding MCPs: Build agent workflows with more than 80 MCP servers using Composio. Instantly connect to databases, AI tools, project management, social apps, CRMs, storage, finance, and dev platforms. Simple URLs, secure access, modular control. Power up your agents with real-world actions across cloud and enterprise systems — all in seconds. · GitHub"
-[4]: https://github.com/UnicomAI/wanwu?utm_source=chatgpt.com "GitHub - UnicomAI/wanwu: China Unicom's Yuanjing Wanwu Agent Platform is an enterprise-grade, multi-tenant AI agent development platform. It helps users build applications such as intelligent agents, workflows, and rag, and also supports model management. The platform features a developer-friendly license, and we welcome all developers to build upon the platform."

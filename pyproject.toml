@@ -65,7 +65,6 @@ dependencies = [
     # OCR & Embedding (NEW for 004-ocr-embedding-pipeline)
     "sentence-transformers>=2.3.0",
     "paddleocr>=2.7.0",
-    "paddlepaddle>=2.6.0",
     "langdetect>=1.0.9",
     
     # Logging
@@ -76,6 +75,9 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "httpx>=0.26.0",
     "redis>=5.0.1",
+    # Data & Markdown utilities
+    "python-frontmatter",
+    "datasets>=2.20.0",
 ]
 
 [project.optional-dependencies]

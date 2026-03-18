@@ -5,7 +5,9 @@ and reporting.
 """
 
 
-class OmniAIException(Exception):
+
+# Base exception for all OmniAI errors
+class AgenticOmniException(Exception):
     """Base exception for all OmniAI (万象智文Omni Intelligent Documents) errors."""
 
     def __init__(self, message: str, *, details: dict[str, any] | None = None) -> None:

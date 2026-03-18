@@ -26,13 +26,10 @@ colorlog==6.10.1
 coverage==7.13.1
 cryptography==46.0.3
 dataclasses-json==0.6.7
-datasets==2.18.0
+datasets>=2.20.0
 defusedxml==0.7.1
-Deprecated==1.2.18
-dill==0.4.0
+dill>=0.4.0
 dirtyjson==1.0.8
-distro==1.9.0
-docling==2.67.0
 docling-core==2.58.1
 docling-ibm-models==3.10.3
 docling-parse==4.7.2
@@ -45,7 +42,7 @@ fastapi==0.128.0
 filelock==3.20.3
 filetype==1.2.0
 frozenlist==1.8.0
-fsspec==2026.1.0
+fsspec==2023.10.0
 greenlet==3.3.0
 griffe==1.15.0
 h11==0.16.0

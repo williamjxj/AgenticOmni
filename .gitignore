@@ -235,5 +235,5 @@ secrets/
 
 # william
 docs/todo.md
-etc/
+specs/
 .ruff_cache/
