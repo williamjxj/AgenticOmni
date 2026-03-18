@@ -22,12 +22,12 @@ OmniAI now supports importing datasets from HuggingFace Hub directly into your R
 4. Created comprehensive documentation and test suite
 
 ### 📁 Files Created/Modified
-- `src/ingestion_parsing/services/hf_dataset_loader.py`
-- `src/ingestion_parsing/tasks/hf_dataset_tasks.py`
+- `src/ingestion_parsing/services/HF_TOKEN_REMOVED.py`
+- `src/ingestion_parsing/tasks/HF_TOKEN_REMOVED.py`
 - `src/api/routes/datasets.py`
 - `docs/huggingface-integration.md`
 - `QUICKSTART_HF.md`
-- `test_hf_integration.py`
+- `test_HF_TOKEN_REMOVED.py`
 
 ---
 
@@ -45,7 +45,7 @@ OmniAI now supports importing datasets from HuggingFace Hub directly into your R
                      ▼
 ┌─────────────────────────────────────────────────────────┐
 │              Background Tasks (Dramatiq)                 │
-│  import_hf_dataset_task()                                │
+│  import_HF_TOKEN_REMOVED()                                │
 │  → Load from HF → Create docs → Chunk → Embed           │
 └────────────────────┬────────────────────────────────────┘
                      │
@@ -90,7 +90,7 @@ The `datasets==3.3.0` package has been added to your requirements.
 
 Your `.env` already has the HuggingFace token:
 ```bash
-HUGGINGFACE_TOKEN=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
+HUGGINGFACE_TOKEN=HF_TOKEN_REMOVED
 ```
 
 This token is now loaded via `config/settings.py`.
@@ -257,8 +257,8 @@ HuggingFace Hub
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| **Loader Service** | `src/ingestion_parsing/services/hf_dataset_loader.py` | Loads datasets from HuggingFace |
-| **Background Task** | `src/ingestion_parsing/tasks/hf_dataset_tasks.py` | Async processing with Dramatiq |
+| **Loader Service** | `src/ingestion_parsing/services/HF_TOKEN_REMOVED.py` | Loads datasets from HuggingFace |
+| **Background Task** | `src/ingestion_parsing/tasks/HF_TOKEN_REMOVED.py` | Async processing with Dramatiq |
 | **API Endpoint** | `src/api/routes/datasets.py` | REST API for import/validation |
 | **Settings** | `config/settings.py` | Configuration with HF token |
 
@@ -290,7 +290,7 @@ Add to your `.env` file:
 
 ```bash
 # HuggingFace Configuration
-HUGGINGFACE_TOKEN=hf_xxx  # Already set in your .env
+HUGGINGFACE_TOKEN=HF_TOKEN_REMOVED  # Already set in your .env
 ```
 
 ### Settings
@@ -429,7 +429,7 @@ Imported datasets use existing tables:
 
 ```python
 # Task flow
-import_hf_dataset_task
+import_HF_TOKEN_REMOVED
   → load_squad_dataset()
   → create_document()
   → chunk_document()
