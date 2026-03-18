@@ -5,6 +5,13 @@ title: OmniAI (万象智文Omni Intelligent Documents) - AI-Powered Document Int
 
 {% include navigation.html %}
 
+
+## AgenticOmni PoC/MVP: Enterprise Demo & Funding
+
+This documentation site provides a live overview of the PoC/MVP architecture, setup, and usage for enterprise demo and funding presentations. For a quick start, see the [Quick Start Guide](docs/QUICKSTART.html).
+
+---
+
 ## OmniAI (万象智文Omni Intelligent Documents): AI-Powered Document Intelligence Platform
 
 **Status**: ✅ MVP Complete - Document Upload & Processing Pipeline  

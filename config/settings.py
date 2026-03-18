@@ -1,4 +1,8 @@
-"""Application settings using Pydantic BaseSettings.
+# Environment configuration for backend (PoC/MVP)
+import os
+
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:pass@localhost:5432/agenticomni")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/1")"""Application settings using Pydantic BaseSettings.
 
 This module defines the Settings class that loads and validates environment variables.
 All configuration should be accessed through the settings instance in src.shared.config.

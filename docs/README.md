@@ -1,4 +1,20 @@
-# OmniAI Documentation
+
+# AgenticOmni Documentation (PoC/MVP)
+---
+
+## 🚀 PoC/MVP Overview
+
+This documentation covers the PoC/MVP architecture, setup, and usage for enterprise demo and funding presentations.
+
+### Key Features
+* Enterprise connectors (SharePoint, Google Drive, email)
+* Modular multi-agent pipeline (Document → OCR → Extraction → RAG → Summary)
+* Governance dashboard (usage/cost/logs)
+* Document intelligence (OCR/table extraction)
+* Human-in-the-loop review UI
+
+### Quick Start
+See [quickstart.md](./quickstart.md) for setup instructions.
 
 **Last Updated**: February 13, 2026  
 **Version**: 0.2.0

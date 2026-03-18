@@ -38,41 +38,51 @@ services:
       - agenticomni-network
     command: redis-server --appendonly yes
     volumes:
-      - redis_data:/data
+      version: '3.9'
 
-  clamav:
-    image: clamav/clamav:latest
-    container_name: agenticomni-clamav
-    profiles:
-      - clamav  # Optional: no linux/arm64 image; use only on x86 or when arm64 available
-    ports:
-      - "3310:3310"
-    environment:
-      - CLAMAV_NO_FRESHCLAMD=false
-    healthcheck:
-      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
-      interval: 60s
-      timeout: 30s
-      retries: 3
-      start_period: 300s  # ClamAV needs time to download virus definitions
-    restart: unless-stopped
-    networks:
-      - agenticomni-network
-    volumes:
-      - clamav_data:/var/lib/clamav
+      services:
+        backend:
+          build: ./backend
+          command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+          volumes:
+            - ./backend:/app/backend
+          environment:
+            - DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/agenticomni
+            - REDIS_URL=redis://redis:6379/1
+          ports:
+            - "8000:8000"
+          depends_on:
+            - db
+            - redis
 
-volumes:
-  postgres_data:
-    driver: local
-    name: agenticomni_postgres_data
-  redis_data:
-    driver: local
-    name: agenticomni_redis_data
-  clamav_data:
-    driver: local
-    name: agenticomni_clamav_data
+        frontend:
+          build: ./frontend
+          command: npm run dev
+          volumes:
+            - ./frontend:/app/frontend
+          ports:
+            - "3000:3000"
+          environment:
+            - NEXT_PUBLIC_API_URL=http://localhost:8000
 
-networks:
-  agenticomni-network:
-    driver: bridge
-    name: agenticomni-network
+        db:
+          image: ankane/pgvector
+          environment:
+            POSTGRES_DB: agenticomni
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: pass
+          ports:
+            - "5432:5432"
+          volumes:
+            - pgdata:/var/lib/postgresql/data
+
+        redis:
+          image: redis:7
+          ports:
+            - "6379:6379"
+          volumes:
+            - redisdata:/data
+
+      volumes:
+        pgdata:
+        redisdata:
